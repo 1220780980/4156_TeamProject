@@ -55,7 +55,14 @@ CREATE TABLE IF NOT EXISTS user_targets (
     CONSTRAINT check_protein CHECK (protein IS NULL OR protein >= 0),
     CONSTRAINT check_fiber CHECK (fiber IS NULL OR fiber >= 0),
     CONSTRAINT check_fat CHECK (fat IS NULL OR fat >= 0),
-    CONSTRAINT check_carbs CHECK (carbs IS NULL OR carbs >= 0)
+    CONSTRAINT check_carbs CHECK (carbs IS NULL OR carbs >= 0),
+    CONSTRAINT check_iron CHECK (iron IS NULL OR iron >= 0),
+    CONSTRAINT check_calcium CHECK (calcium IS NULL OR calcium >= 0),
+    CONSTRAINT check_vitamin_a CHECK (vitamin_a IS NULL OR vitamin_a >= 0),
+    CONSTRAINT check_vitamin_c CHECK (vitamin_c IS NULL OR vitamin_c >= 0),
+    CONSTRAINT check_vitamin_d CHECK (vitamin_d IS NULL OR vitamin_d >= 0),
+    CONSTRAINT check_sodium CHECK (sodium IS NULL OR sodium >= 0),
+    CONSTRAINT check_potassium CHECK (potassium IS NULL OR potassium >= 0)
 );
 
 --
