@@ -1,7 +1,7 @@
 package com.example.nutriflow.service;
 
 import com.example.nutriflow.model.User;
-import com.example.nutriflow.model.dto.UpdateUserRequest;
+import com.example.nutriflow.model.dto.UpdateUserRequestDTO;
 import com.example.nutriflow.service.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,39 +34,32 @@ public class UserService {
      * @return Optional containing the updated user if successful, empty if user not found
      */
     @Transactional
-    public Optional<User> updateUser(Integer userId, UpdateUserRequest request) {
+    public Optional<User> updateUser(Integer userId, UpdateUserRequestDTO request) {
         return userRepository.findUserById(userId)
                 .map(existingUser -> {
                     // Update fields if they are provided
-                    if (request.getHeight() != null) {
-                        existingUser.setHeight(request.getHeight());
-                    }
-                    if (request.getWeight() != null) {
-                        existingUser.setWeight(request.getWeight());
-                    }
-                    if (request.getAge() != null) {
-                        existingUser.setAge(request.getAge());
-                    }
-                    if (request.getSex() != null) {
-                        existingUser.setSex(request.getSex());
-                    }
-                    if (request.getAllergies() != null) {
-                        existingUser.setAllergies(request.getAllergies());
-                    }
-                    if (request.getDislikes() != null) {
-                        existingUser.setDislikes(request.getDislikes());
-                    }
-                    if (request.getBudget() != null) {
-                        existingUser.setBudget(request.getBudget());
-                    }
-                    if (request.getCookingSkill() != null) {
-                        existingUser.setCookingSkillLevel(request.getCookingSkill());
-                    }
-                    if (request.getEquipments() != null) {
-                        existingUser.setEquipments(request.getEquipments());
-                    }
+                    updateIfNotNull(request.getHeight(), existingUser::setHeight);
+                    updateIfNotNull(request.getWeight(), existingUser::setWeight);
+                    updateIfNotNull(request.getAge(), existingUser::setAge);
+                    updateIfNotNull(request.getSex(), existingUser::setSex);
+                    updateIfNotNull(request.getAllergies(), existingUser::setAllergies);
+                    updateIfNotNull(request.getDislikes(), existingUser::setDislikes);
+                    updateIfNotNull(request.getBudget(), existingUser::setBudget);
+                    updateIfNotNull(request.getCookingSkill(), existingUser::setCookingSkillLevel);
+                    updateIfNotNull(request.getEquipments(), existingUser::setEquipments);
                     
                     return userRepository.save(existingUser);
                 });
+    }
+    
+    /**
+     * Helper method to update a field only if the new value is not null
+     * 
+     * @param value the new value (can be null)
+     * @param setter the setter method to call if value is not null
+     * @param <T> the type of the value
+     */
+    private <T> void updateIfNotNull(T value, java.util.function.Consumer<T> setter) {
+        Optional.ofNullable(value).ifPresent(setter);
     }
 }
