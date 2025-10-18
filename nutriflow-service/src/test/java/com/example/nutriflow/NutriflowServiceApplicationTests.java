@@ -1,4 +1,4 @@
-package test.java.com.example.nutriflow;
+package com.example.nutriflow;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
