@@ -16,5 +16,5 @@ public interface RecipeIngredientRepository extends JpaRepository<RecipeIngredie
      * @param recipeId the ID of the recipe
      * @return list of ingredients belonging to the specified recipe
      */
-    List<RecipeIngredient> findByRecipeId(Long recipeId);
+    List<RecipeIngredient> findByRecipeId(Integer recipeId);
 }

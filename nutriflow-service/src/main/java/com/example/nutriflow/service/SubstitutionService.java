@@ -41,7 +41,7 @@ public class SubstitutionService {
      * @return a {@link SubstitutionCheckResponse} containing
      *         allergen detection results and substitution suggestions
      */
-    public SubstitutionCheckResponse checkRecipeForUser(Long recipeId, Integer userId) {
+    public SubstitutionCheckResponse checkRecipeForUser(Integer recipeId, Integer userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User not found: " + userId));
 

@@ -17,7 +17,7 @@ import lombok.Builder;
 public class SubstitutionCheckRequest {
 
     /** ID of the recipe to check. */
-    private Long recipeId;
+    private Integer recipeId;
 
     /** ID of the user whose allergies are applied. */
     private Integer userId;

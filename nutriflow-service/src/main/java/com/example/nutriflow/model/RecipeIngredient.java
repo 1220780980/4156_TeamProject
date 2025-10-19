@@ -32,7 +32,7 @@ public class RecipeIngredient {
 
     /** The ID of the recipe this ingredient belongs to. */
     @Column(name = "recipe_id", nullable = false)
-    private Long recipeId;
+    private Integer recipeId;
 
     /** The name of the ingredient (e.g., "almond milk"). */
     private String ingredient;

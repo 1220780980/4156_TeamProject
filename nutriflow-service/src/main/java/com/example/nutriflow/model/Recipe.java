@@ -1,47 +1,89 @@
 package com.example.nutriflow.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
-import jakarta.persistence.Column;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
 
 /**
- * Entity class representing a recipe in the NutriFlow system.
- * Stores basic recipe details such as title, duration, and tags.
+ * Entity representing a recipe stored in the system.
+ * Captures core metadata, optional categorization, structured
+ * ingredient and nutrition payloads, macronutrients, and
+ * a popularity score for ranking.
  */
 @Entity
-@Table(name = "recipes")
-@Getter
-@Setter
+@Table(name = "recipes", schema = "nutriflow")
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Recipe {
 
     /** Unique identifier for the recipe. */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "recipe_id")
+    private Integer recipeId;
 
-    /** The title or name of the recipe. */
+    /** Title or name of the recipe. */
+    @Column(name = "title", nullable = false)
     private String title;
 
-    /** Cooking time in minutes required to prepare the recipe. */
-    @Column(name = "cook_time_minutes")
-    private Integer cookTimeMinutes;
+    /** Estimated cook time in minutes. */
+    @Column(name = "cook_time")
+    private Integer cookTime;
 
-    /** List of cuisines associated with the recipe (e.g., Italian, Asian). */
-    @Column(columnDefinition = "text[]")
+    /**
+     * Optional cuisines associated with the recipe
+     *          (e.g., "Italian", "Mexican").
+     * Stored as a PostgreSQL text array.
+     */
+    @Column(name = "cuisines", columnDefinition = "text[]")
     private String[] cuisines;
 
-    /** Tags describing the recipe type or meal category (e.g., breakfast, vegan). */
-    @Column(columnDefinition = "text[]")
+    /**
+     * Optional tags for filtering or search (e.g., "vegetarian", "quick").
+     * Stored as a PostgreSQL text array.
+     */
+    @Column(name = "tags", columnDefinition = "text[]")
     private String[] tags;
+
+    /**
+     * Structured ingredient list as JSON (JSONB in PostgreSQL).
+     * Expected format: an array of objects with name, quantity, and unit.
+     */
+    @Column(name = "ingredients", columnDefinition = "jsonb")
+    private String ingredients;
+
+    /**
+     * Structured nutrition payload as JSON (JSONB in PostgreSQL).
+     * May include detailed nutrient breakdown per serving.
+     */
+    @Column(name = "nutrition", columnDefinition = "jsonb")
+    private String nutrition;
+
+    /** Calories per serving. */
+    private BigDecimal calories;
+
+    /** Carbohydrates per serving (grams). */
+    private BigDecimal carbohydrates;
+
+    /** Fat per serving (grams). */
+    private BigDecimal fat;
+
+    /** Fiber per serving (grams). */
+    private BigDecimal fiber;
+
+    /** Protein per serving (grams). */
+    private BigDecimal protein;
+
+    /** Popularity score used to rank recipes (higher means more popular). */
+    @Column(name = "popularity_score")
+    private Integer popularityScore;
 }
