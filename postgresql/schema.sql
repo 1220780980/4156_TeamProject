@@ -106,3 +106,52 @@ CREATE TRIGGER update_user_targets_updated_at
     BEFORE UPDATE ON user_targets
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
+
+--
+-- create table 'pantry_items'
+--
+CREATE TABLE IF NOT EXISTS pantry_items (
+    item_id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    quantity DECIMAL(10,2) DEFAULT 0,
+    unit VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pantry_user_fk FOREIGN KEY (user_id)
+        REFERENCES nutriflow.users(user_id) ON DELETE CASCADE
+);
+
+--
+-- create table 'recipes'
+--
+CREATE TABLE IF NOT EXISTS recipes (
+    recipe_id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    cook_time INTEGER,
+    cuisines TEXT[],
+    tags TEXT[],
+    ingredients JSONB,
+    nutrition JSONB,
+    calories DECIMAL(7,2),
+    carbohydrates DECIMAL(7,2),
+    fat DECIMAL(7,2),
+    fiber DECIMAL(7,2),
+    protein DECIMAL(7,2),
+    popularity_score INTEGER DEFAULT 0
+);
+
+--
+-- create table 'favorite_recipes'
+--
+CREATE TABLE IF NOT EXISTS favorite_recipes (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    recipe_id INTEGER NOT NULL,
+    times_used INTEGER DEFAULT 0,
+    is_favorite BOOLEAN DEFAULT FALSE,
+    CONSTRAINT favorite_recipe_user_fk FOREIGN KEY (user_id)
+        REFERENCES nutriflow.users(user_id) ON DELETE CASCADE,
+    CONSTRAINT favorite_recipe_fk FOREIGN KEY (recipe_id)
+        REFERENCES nutriflow.recipes(recipe_id) ON DELETE CASCADE
+);
