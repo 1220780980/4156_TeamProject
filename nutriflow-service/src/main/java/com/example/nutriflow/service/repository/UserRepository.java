@@ -8,14 +8,14 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 /**
- * Repository interface for User entity
+ * Repository interface for User entity.
  */
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
 
      /**
-     * Find a user by their user ID
-     * 
+     * Find a user by their user ID.
+     *
      * @param userId the ID of the user
      * @return Optional containing the user if found, empty otherwise
      */
