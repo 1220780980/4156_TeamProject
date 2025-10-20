@@ -10,56 +10,74 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 /**
- * Service class for handling user-related business logic
+ * Service class for handling user-related business logic.
  */
 @Service
 public class UserService {
-    
+
+    /**
+     * Repository for user data.
+     */
     @Autowired
     private UserRepository userRepository;
 
     /**
-     * Find a user by their user ID
+     * Find a user by their user ID.
+     *
      * @param userId the ID of the user to find
      * @return Optional containing the user if found, empty otherwise
      */
-    public Optional<User> getUserById(Integer userId) {
+    public Optional<User> getUserById(final Integer userId) {
         return userRepository.findUserById(userId);
     }
-    
+
     /**
-     * Update an existing user with new information
+     * Update an existing user with new information.
+     *
      * @param userId the ID of the user to update
      * @param request the request containing updated information
-     * @return Optional containing the updated user if successful, empty if user not found
+     * @return Optional containing the updated user if successful,
+     *         empty if user not found
      */
     @Transactional
-    public Optional<User> updateUser(Integer userId, UpdateUserRequestDTO request) {
+    public Optional<User> updateUser(final Integer userId,
+                                     final UpdateUserRequestDTO request) {
         return userRepository.findUserById(userId)
                 .map(existingUser -> {
                     // Update fields if they are provided
-                    updateIfNotNull(request.getHeight(), existingUser::setHeight);
-                    updateIfNotNull(request.getWeight(), existingUser::setWeight);
-                    updateIfNotNull(request.getAge(), existingUser::setAge);
-                    updateIfNotNull(request.getSex(), existingUser::setSex);
-                    updateIfNotNull(request.getAllergies(), existingUser::setAllergies);
-                    updateIfNotNull(request.getDislikes(), existingUser::setDislikes);
-                    updateIfNotNull(request.getBudget(), existingUser::setBudget);
-                    updateIfNotNull(request.getCookingSkill(), existingUser::setCookingSkillLevel);
-                    updateIfNotNull(request.getEquipments(), existingUser::setEquipments);
-                    
+                    updateIfNotNull(request.getHeight(),
+                            existingUser::setHeight);
+                    updateIfNotNull(request.getWeight(),
+                            existingUser::setWeight);
+                    updateIfNotNull(request.getAge(),
+                            existingUser::setAge);
+                    updateIfNotNull(request.getSex(),
+                            existingUser::setSex);
+                    updateIfNotNull(request.getAllergies(),
+                            existingUser::setAllergies);
+                    updateIfNotNull(request.getDislikes(),
+                            existingUser::setDislikes);
+                    updateIfNotNull(request.getBudget(),
+                            existingUser::setBudget);
+                    updateIfNotNull(request.getCookingSkill(),
+                            existingUser::setCookingSkillLevel);
+                    updateIfNotNull(request.getEquipments(),
+                            existingUser::setEquipments);
+
                     return userRepository.save(existingUser);
                 });
     }
-    
+
     /**
-     * Helper method to update a field only if the new value is not null
-     * 
+     * Helper method to update a field only if the new value is not null.
+     *
      * @param value the new value (can be null)
      * @param setter the setter method to call if value is not null
      * @param <T> the type of the value
      */
-    private <T> void updateIfNotNull(T value, java.util.function.Consumer<T> setter) {
+    private <T> void updateIfNotNull(final T value,
+                                      final java.util.function.Consumer<T>
+                                              setter) {
         Optional.ofNullable(value).ifPresent(setter);
     }
 }
