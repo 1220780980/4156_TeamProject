@@ -1,13 +1,15 @@
 package com.example.nutriflow.service;
 
+import com.example.nutriflow.model.FavoriteRecipe;
 import com.example.nutriflow.model.Recipe;
+import com.example.nutriflow.service.repository.FavoriteRecipeRepository;
 import com.example.nutriflow.service.repository.RecipeRepository;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
 
 /**
  * Service class for handling business logic related to recipes.
@@ -20,7 +22,11 @@ public class RecipeService {
     @Autowired
     private RecipeRepository recipeRepository;
 
-    /** Default number of recipes to return when limit is not specified. */
+    /** Repository for accessing favorite-recipe associations. */
+    @Autowired
+    private FavoriteRecipeRepository favoriteRecipeRepository;
+
+    /** Default number of recipes when limit is not specified. */
     private static final int DEFAULT_POPULAR_LIMIT = 5;
 
     /**
@@ -52,7 +58,7 @@ public class RecipeService {
      * @return list of popular recipes up to the specified limit
      */
     public List<Recipe> getPopularRecipes(final int limit) {
-        int validLimit = limit > 0 ? limit : DEFAULT_POPULAR_LIMIT;
+        final int validLimit = limit > 0 ? limit : DEFAULT_POPULAR_LIMIT;
         return recipeRepository.findPopularRecipes(
                 PageRequest.of(0, validLimit));
     }
@@ -68,14 +74,64 @@ public class RecipeService {
 
     /**
      * Retrieves all favorite recipes for a given user.
-     * Currently returns an empty list until
-     *      the favorites feature is integrated.
+     * If the user has no favorites, returns an empty list.
      *
      * @param userId the ID of the user
-     * @return list of the user's favorite recipes (currently empty)
+     * @return list of Recipe entities the user favorited
      */
     public List<Recipe> getUserFavoriteRecipes(final Integer userId) {
-        // Placeholder until FavoriteRecipeRepository is implemented
-        return List.of();
+        final List<Integer> recipeIds = favoriteRecipeRepository
+                .findByUserId(userId)
+                .stream()
+                .map(FavoriteRecipe::getRecipeId)
+                .collect(Collectors.toList());
+
+        return recipeRepository.findAllById(recipeIds);
+    }
+
+    /**
+     * Add a recipe to a user's favorites.
+     * Throws IllegalStateException if it already exists.
+     *
+     * @param userId   the user ID
+     * @param recipeId the recipe ID
+     * @return the persisted FavoriteRecipe row
+     */
+    public FavoriteRecipe addFavorite(
+            final Integer userId,
+            final Integer recipeId) {
+
+        if (favoriteRecipeRepository
+                .existsByUserIdAndRecipeId(userId, recipeId)) {
+            throw new IllegalStateException(
+                    "Recipe already in favorites");
+        }
+
+        final FavoriteRecipe favorite = new FavoriteRecipe();
+        favorite.setUserId(userId);
+        favorite.setRecipeId(recipeId);
+        favorite.setTimesUsed(0);
+
+        return favoriteRecipeRepository.save(favorite);
+    }
+
+    /**
+     * Remove a recipe from a user's favorites.
+     * A no-op if the mapping does not exist.
+     *
+     * @param userId   the user ID
+     * @param recipeId the recipe ID
+     */
+    public void removeFavorite(
+            final Integer userId,
+            final Integer recipeId) {
+
+        final List<FavoriteRecipe> rows = favoriteRecipeRepository
+                .findByUserId(userId)
+                .stream()
+                .filter(f -> f.getRecipeId().equals(recipeId))
+                .collect(Collectors.toList());
+
+        favoriteRecipeRepository.deleteAll(rows);
     }
 }
