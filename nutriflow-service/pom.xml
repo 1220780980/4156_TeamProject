@@ -107,26 +107,30 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.8</version>
+                <version>0.8.10</version>
 
                 <executions>
                     <execution>
-                    <goals>
-                        <goal>prepare-agent</goal>
-                    </goals>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
                     </execution>
 
                     <execution>
-                    <id>report</id>
-                    <phase>verify</phase>
-                    <goals>
-                        <goal>report</goal>
-                    </goals>
+                        <id>report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
                         <configuration>
-                        <excludes>
-                            <exclude>**/model/**</exclude>
-                            <exclude>**/model/dto/**</exclude>
-                        </excludes>
+                            <dataFile>target/jacoco.exec</dataFile>
+                            <outputDirectory>target/site/jacoco</outputDirectory>
+                            <excludes>
+                                <exclude>**/model/**</exclude>
+                                <exclude>**/model/dto/**</exclude>
+                                <exclude>**/model/enums/**</exclude>
+                            </excludes>
                         </configuration>
                     </execution>
                 </executions>
