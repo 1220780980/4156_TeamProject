@@ -76,6 +76,24 @@
         <version>5.11.0</version>
         <scope>test</scope>
         </dependency>
+
+        <dependency>
+        <groupId>com.google.genai</groupId>
+        <artifactId>google-genai</artifactId>
+        <version>1.24.0</version>
+        </dependency>
+
+        <dependency>
+        <groupId>com.google.auth</groupId>
+        <artifactId>google-auth-library-oauth2-http</artifactId>
+        <version>1.38.0</version>
+        </dependency>
+        
+        <dependency>
+        <groupId>com.google.auth</groupId>
+        <artifactId>google-auth-library-credentials</artifactId>
+        <version>1.38.0</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -98,10 +116,10 @@
                             <version>1.18.32</version>
                         </path>
                     </annotationProcessorPaths>
-                    <excludes>
+                    <!-- <excludes>
                         <exclude>**/AIRecipeService.java</exclude>
                         <exclude>**/AIRecipeController.java</exclude>
-                    </excludes>
+                    </excludes> -->
                 </configuration>
             </plugin>
             <plugin>
