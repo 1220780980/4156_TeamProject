@@ -12,6 +12,7 @@ export PATH="$JAVA_HOME/bin:$PATH"
 java -version
 ```  
 (Ensure it prints a Java 17 version.)
+
 2. Compile
 ```shell
 mvn clean compile
@@ -22,7 +23,52 @@ mvn spring-boot:run
 ```   
 The service will start on `http://localhost:8080` by default.
 ## Implemented Features
-### User
+### User Management
+
+Purpose: Manage basic user information including personal details, dietary preferences, and cooking capabilities.
+
+Modules:
+- Entity: User
+    - Fields: userId, name, height, weight, age, sex, allergies, dislikes, budget, cookingSkillLevel, equipments, timestamps
+- Repository: UserRepository
+    - `findUserById(Integer userId)`
+    - `existsById(Integer userId)`
+- Service: UserService
+    - `getUserById(Integer userId)` → retrieve user information by ID
+    - `updateUser(Integer userId, UpdateUserRequestDTO request)` → update user information (supports partial updates)
+- Controller: UserController
+    - `GET /api/users/{userId}` → retrieve user basic information
+    - `PUT /api/users/{userId}` → update user information
+
+### User Nutritional Targets
+
+Purpose: Store and manage daily nutritional targets for users including macros and micronutrients.
+
+Modules:
+- Entity: UserTarget
+    - Fields: targetId, userId, calories, protein, fiber, fat, carbs, iron, calcium, vitaminA, vitaminC, vitaminD, sodium, potassium, timestamps
+- Repository: UserTargetRepository
+    - `findLatestByUserId(Integer userId)`
+- Service: UserTargetService
+    - `getUserTargets(Integer userId)` → retrieve user's latest nutritional targets
+    - `updateUserTargets(Integer userId, UpdateUserTargetRequestDTO request)` → update or create user nutritional targets
+- Controller: UserController
+    - `GET /api/users/{userId}/targets` → retrieve user nutritional targets
+    - `PUT /api/users/{userId}/targets` → update user nutritional targets
+
+### Health Statistics
+
+Purpose: Track user health metrics over time and provide BMI calculations and historical data analysis.
+
+Modules:
+- Entity: UserHealthHistory
+    - Fields: historyId, userId, weight, height, bmi (auto-calculated by database), recordedAt
+- Repository: UserHealthHistoryRepository
+    - `findByUserIdOrderByRecordedAtDesc(Integer userId)`
+- Service: HealthStatisticsService
+    - `getHealthStatistics(Integer userId)` → retrieve comprehensive health statistics
+- Controller: UserController
+    - `GET /api/users/{userId}/health_statistics` → retrieve user health statistics with BMI calculation and historical records
 
 ### Recipe Management
 
