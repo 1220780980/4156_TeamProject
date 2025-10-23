@@ -1,7 +1,9 @@
 package com.example.nutriflow.controller;
 
-import com.example.nutriflow.model.Recipe;
 import com.example.nutriflow.service.AIRecipeService;
+import com.example.nutriflow.service.RecipeService;
+import java.util.List;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,9 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 /**
  * REST controller for managing AI recipe-related operations.
@@ -25,9 +24,6 @@ public class AIRecipeController {
     @Autowired
     private AIRecipeService aiRecipeService;
 
-    public AIRecipeController(AIRecipeService aiRecipeService) { 
-        this.aiRecipeService = aiRecipeService; 
-    }
     /**
      * GET endpoint to retrieve an AI recommended recipe with given ingredients.
      *
@@ -37,12 +33,12 @@ public class AIRecipeController {
      * @return ResponseEntity containing a recommended recipe
      */
     @GetMapping("/{ingredients}")
-    public ResponseEntity<Optional<Recipe>> getAIRecipe(final @PathVariable String ingredients) {
+    public ResponseEntity<?> getAIRecipe(final @PathVariable String ingredients) {
         try {
             return ResponseEntity.ok(
-                AIrecipeService.getAIRecipe(ingredients));
+                aiRecipeService.getAIRecipe(ingredients));
         } catch (Exception e) {
-        return ResponseEntity.badRequest().body(Map.of("error", "some error occured"));
+        return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -54,12 +50,12 @@ public class AIRecipeController {
      * @return ResponseEntity containing a recommended recipe
      */
     @GetMapping("/recommendation")
-    public ResponseEntity<Optional<Recipe>> getAIRecommendedRecipe() {
+    public ResponseEntity<?> getAIRecommendedRecipe() {
         try {
             return ResponseEntity.ok(
-                AIrecipeService.getAIRecommendedRecipe(ingredients));
+                aiRecipeService.getAIRecommendedRecipe());
         } catch (Exception e) {
-        return ResponseEntity.badRequest().body(Map.of("error", "some error occured"));
+        return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 }
