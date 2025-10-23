@@ -5,6 +5,7 @@ import com.example.nutriflow.model.dto.SubstitutionCheckResponse;
 import com.example.nutriflow.model.dto.SubstitutionSuggestionDto;
 import com.example.nutriflow.service.SubstitutionService;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -29,35 +30,39 @@ public final class SubstitutionController {
     /**
      * Check a recipe against a user's allergies and return suggestions.
      *
+     * <p>Returns 200 with payload when resources exist. Returns 404 when the
+     * underlying resource (user or recipe) is missing.</p>
+     *
      * @param req request body with recipeId and userId
-     * @return check result with offenders and suggestions
+     * @return check result with offenders and suggestions, or 404 if missing
      */
     @PostMapping("/check")
     public ResponseEntity<SubstitutionCheckResponse> check(
             @RequestBody final SubstitutionCheckRequest req) {
-        return ResponseEntity.ok(
+        try {
+            final SubstitutionCheckResponse resp =
                 substitutionService.checkRecipeForUser(
-                        req.getRecipeId(), req.getUserId()
-                )
-        );
+                    req.getRecipeId(), req.getUserId());
+            return ResponseEntity.ok(resp);
+        } catch (NoSuchElementException ex) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     /**
      * Query substitutions for an ingredient, optionally avoiding a tag.
      *
      * @param ingredient ingredient to replace
-     * @param avoid optional tag to avoid (e.g. nuts, gluten)
-     * @return substitution suggestions
+     * @param avoid optional tag to avoid (e.g., nuts, gluten)
+     * @return substitution suggestions (200, possibly empty)
      */
     @GetMapping
     public ResponseEntity<List<SubstitutionSuggestionDto>> query(
             @RequestParam final String ingredient,
             @RequestParam(required = false) final String avoid) {
-
-        return ResponseEntity.ok(
-                substitutionService.findSubstitutions(
-                        ingredient, Optional.ofNullable(avoid)
-                )
-        );
+        final List<SubstitutionSuggestionDto> out =
+            substitutionService.findSubstitutions(
+                ingredient, Optional.ofNullable(avoid));
+        return ResponseEntity.ok(out);
     }
 }
