@@ -155,3 +155,30 @@ CREATE TABLE IF NOT EXISTS favorite_recipes (
     CONSTRAINT favorite_recipe_fk FOREIGN KEY (recipe_id)
         REFERENCES nutriflow.recipes(recipe_id) ON DELETE CASCADE
 );
+
+-- 
+-- create table recipe_ingredients (for per-recipe items)
+-- 
+CREATE TABLE IF NOT EXISTS nutriflow.recipe_ingredients (
+    id SERIAL PRIMARY KEY,
+    recipe_id INTEGER NOT NULL,
+    ingredient TEXT,
+    quantity NUMERIC,
+    unit TEXT,
+    allergen_tags TEXT[],
+    CONSTRAINT recipe_ingredients_recipe_fk
+        FOREIGN KEY (recipe_id)
+        REFERENCES nutriflow.recipes (recipe_id)
+        ON DELETE CASCADE
+);
+
+-- 
+-- create substitution_rules (for ingredient swaps)
+-- 
+CREATE TABLE IF NOT EXISTS nutriflow.substitution_rules (
+    id SERIAL PRIMARY KEY,
+    ingredient TEXT NOT NULL,
+    avoid TEXT,              -- nullable; null means general rule
+    substitute TEXT NOT NULL,
+    note TEXT
+);
