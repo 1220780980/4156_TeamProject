@@ -81,6 +81,24 @@ Modules:
     - `GET /api/recipes/{userId}/favorites` → Retrieve user’s favorite recipes
     - `DELETE /api/recipes/{userId}/favorites/{recipeId}` → Remove a recipe from favorites
 
+### Substitution Management
+
+Purpose: Detect allergens in recipes and suggest alternative ingredients based on user dietary preferences.
+
+Modules:
+- Entity: SubstitutionRule
+    - Fields: ingredient, avoid, substitute, note
+- Repository: SubstitutionRuleRepository
+    - `findByIngredientIgnoreCase(String ingredient)`
+    - `findByIngredientAndAvoidIgnoreCase(String ingredient, String avoid)`
+- Service: SubstitutionService
+    - `checkRecipeForUser(Integer recipeId, Integer userId)` checks for allergen conflicts in a recipe and returns substitution suggestions
+    - `findSubstitute(String ingredient, String avoid)` retrieves alternative ingredients based on avoidance type
+- Controller: SubstitutionController
+    - `POST /substitutions/check` checks if a recipe contains ingredients a user should avoid
+    - `GET /substitutions?ingredient={name}&avoid={category}` retrieves substitution suggestions for a given ingredient
+
+
 
 ## Database & Data Seeding
 
@@ -93,3 +111,5 @@ Tables:
 - recipes
 - pantry_items
 - favorite_recipes (future use)
+- recipe_ingredients
+- substitution_rules
