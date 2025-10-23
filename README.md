@@ -22,6 +22,17 @@ mvn clean compile
 mvn spring-boot:run
 ```   
 The service will start on `http://localhost:8080` by default.
+
+## Testing Frameworks
+This project uses the following testing and mocking frameworks:
+
+- **JUnit 5 (Jupiter)**
+- **Mockito 5.11.0**
+- **Spring Boot Test**
+
+## Project Management Software
+https://trello.com/b/wPgSYaB3/coms-4156-project
+
 ## Implemented Features
 ### User Management
 
