@@ -193,3 +193,7 @@ coverage: 60% for iteration 1
 ![alt text](coverage_iteration_1.png)
 
 ## Checkstyle
+```
+mvn checkstyle:check
+```
+![alt text](<Screenshot 2025-10-23 at 11.44.26 PM.png>)
