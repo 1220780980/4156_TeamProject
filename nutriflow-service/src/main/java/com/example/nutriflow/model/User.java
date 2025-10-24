@@ -32,16 +32,16 @@ public class User {
 
     /** Maximum length for user name. */
     private static final int NAME_MAX_LENGTH = 255;
-    
+
     /** Precision for height and weight fields. */
     private static final int DIM_PRECISION = 5;
-    
+
     /** Scale for height and weight fields. */
     private static final int DIM_SCALE = 2;
-    
+
     /** Precision for budget field. */
     private static final int BUDGET_PREC = 10;
-    
+
     /** Scale for budget field. */
     private static final int BUDGET_SCALE = 2;
 
