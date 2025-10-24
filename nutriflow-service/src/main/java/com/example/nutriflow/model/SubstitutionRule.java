@@ -14,7 +14,8 @@ import lombok.Builder;
 
 /**
  * Entity class representing a substitution rule for ingredients.
- * Defines what ingredient can replace another, optionally avoiding a specific allergen.
+ * Defines what ingredient can replace another,
+ * optionally avoiding a specific allergen.
  */
 @Entity
 @Table(name = "substitution_rules")
@@ -33,7 +34,7 @@ public class SubstitutionRule {
     /** The ingredient that may need substitution. */
     private String ingredient;
 
-    /** 
+    /**
      * The allergen or ingredient to avoid when substituting.
      * May be null if the rule applies generally.
      */
