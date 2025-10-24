@@ -22,19 +22,23 @@ public class AIRecipeController {
     private AIRecipeService aiRecipeService;
 
     /**
-     * GET endpoint to retrieve an AI recommended recipe with given ingredients.
+     * GET endpoint to retrieve a recipe with the given ingredient.
+     * First, it checks whether a recipe with the given ingredient
+     * already exists in the database;
+     * If not, then ask an LLM to recommend a recipe with the given ingredient.
      *
      * Example:
-     * - /api/ai/recipes/{ingredients} - returns some ai recommended recipe
-     * @param ingredients ingredients that the user wants to use
-     * @return ResponseEntity containing a recommended recipe
+     * /api/ai/recipes/ingredient/{ingredient} - returns a recipe
+     * with the given ingredient.
+     * @param ingredient ingredient that the user wants to use
+     * @return ResponseEntity containing the appropriate recipe
      */
-    @GetMapping("/{ingredients}")
+    @GetMapping("ingredient/{ingredient}")
     public ResponseEntity<?> getAIRecipe(
-        final @PathVariable String ingredients) {
+        final @PathVariable String ingredient) {
         try {
             return ResponseEntity.ok(
-                aiRecipeService.getAIRecipe(ingredients));
+                aiRecipeService.getAIRecipe(ingredient));
         } catch (Exception e) {
         return ResponseEntity.badRequest()
             .body(Map.of("error", e.getMessage()));
@@ -43,9 +47,9 @@ public class AIRecipeController {
 
     /**
      * GET endpoint to retrieve an AI recommended recipe.
-     *
+     * An LLM recommends a randomly generated delicious recipe.
      * Example:
-     * - /api/ai/recipes/recommendation - returns some ai recommended recipe
+     * /api/ai/recipes/recommendation - returns some AI recommended recipe
      * @return ResponseEntity containing a recommended recipe
      */
     @GetMapping("/recommendation")

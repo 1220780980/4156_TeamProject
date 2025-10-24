@@ -1,5 +1,6 @@
 package com.example.nutriflow.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -7,8 +8,12 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import com.example.nutriflow.model.Recipe;
+import com.example.nutriflow.model.RecipeIngredient;
+import com.example.nutriflow.service.repository.RecipeIngredientRepository;
+import com.example.nutriflow.service.repository.RecipeRepository;
 import com.google.genai.Client;
 import com.google.genai.types.GenerateContentConfig;
 import com.google.genai.types.GenerateContentResponse;
@@ -20,7 +25,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
  * Service class for handling AI logic related to recipes.
- * Provides methods for fetching recipes with desired ingredients.
+ * Provides methods for fetching recipes with desired ingredient
+ * and also recommends a recipe.
  */
 @Service
 public class AIRecipeService {
@@ -30,7 +36,12 @@ public class AIRecipeService {
     private final String model;
     /** An ObjectMapper object that parses a json object. */
     private final ObjectMapper objectMapper;
-
+    /** Repository for accessing recipe ingredient data. */
+    @Autowired
+    private RecipeIngredientRepository recipeIngredientRepository;
+    /** Service handling recipe-related logic. */
+    @Autowired
+    private RecipeRepository recipeRepository;
     /**
      * Initializes an AIRecipeService object.
      *
@@ -48,16 +59,38 @@ public class AIRecipeService {
     }
 
     /**
-     * Generates a recipe with the given ingredients.
+     * Generates a recipe with the given ingredient.
      *
-     * @param ingredients the ingredients
+     * @param ingredient the ingredient
      * @return Returns a recipe object with the found or generated recipe.
      */
-    public Recipe getAIRecipe(final String ingredients) {
-            String finalPrompt =
-                "Generate a delicious recipe with the following ingredients"
-                    + ingredients;
-            return requestRecipe(finalPrompt);
+    public Recipe getAIRecipe(final String ingredient) {
+        final Optional<Recipe> existingRecipe = searchIngredient(ingredient);
+        if (existingRecipe.isPresent()) {
+            return existingRecipe.get();
+        }
+
+        final String finalPrompt =
+            "Generate a delicious recipe with the following ingredient: "
+                + ingredient;
+        return requestRecipe(finalPrompt);
+    }
+
+    private Optional<Recipe> searchIngredient(final String ingredient) {
+        List<Recipe> allRecipes = recipeRepository.findAll();
+        for (Recipe recipe : allRecipes) {
+            Integer recipeId = recipe.getRecipeId();
+            final List<RecipeIngredient> recipeIngredients =
+                recipeIngredientRepository.findByRecipeId(recipeId);
+            for (RecipeIngredient ri : recipeIngredients) {
+                final String candidate = ri.getIngredient();
+                if (candidate != null
+                    && ingredient.equalsIgnoreCase(candidate)) {
+                    return Optional.of(recipe);
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     /**
@@ -78,55 +111,62 @@ public class AIRecipeService {
      * @return Returns a recipe object with the generated recipe.
      */
     private Recipe requestRecipe(final String prompt) {
-        Schema responseSchema = Schema.builder()
-                .type("OBJECT")
-                .properties(Map.ofEntries(
-                    Map.entry("title",
-                        Schema.builder().type("STRING").build()),
-                    Map.entry("cookTime",
-                        Schema.builder().type("INTEGER").build()),
-                    Map.entry("cuisines",
-                        Schema.builder()
-                            .type("ARRAY")
-                            .items(Schema.builder().type("STRING").build())
-                            .build()),
-                    Map.entry("tags",
-                        Schema.builder()
-                            .type("ARRAY")
-                            .items(Schema.builder().type("STRING").build())
-                            .build()),
-                    Map.entry("ingredients",
-                        Schema.builder()
-                            .type("OBJECT")
-                            .properties(Map.of(
-                                "required",
-                                        Schema.builder().type("STRING").build(),
-                                "optional",
-                                        Schema.builder().type("STRING").build()
-                            ))
-                            .build()),
-                    // Map.entry("nutrition", Schema.builder()
-                    //         .type("OBJECT")
-                    //         .properties(Map.of(
-                    //             "summary",
-                    // Schema.builder().type("STRING").build()
-                    //         ))
-                    //         .build()),
-                    Map.entry("calories",
-                        Schema.builder().type("NUMBER").build()),
-                    Map.entry("carbohydrates",
-                        Schema.builder().type("NUMBER").build()),
-                    Map.entry("fat",
-                        Schema.builder().type("NUMBER").build()),
-                    Map.entry("fiber",
-                        Schema.builder().type("NUMBER").build()),
-                    Map.entry("protein",
-                        Schema.builder().type("NUMBER").build())
-                    // Map.entry("popularityScore", Schema.builder()
-                    // .type("INTEGER").build())
-                ))
-                .required(List.of("title", "ingredients"))
-                .build();
+        Schema responseSchema = Schema.builder().type("OBJECT")
+            .properties(Map.ofEntries(
+                Map.entry("title",
+                    Schema.builder().type("STRING").build()),
+                Map.entry("cookTime",
+                    Schema.builder().type("INTEGER").build()),
+                Map.entry("cuisines",
+                    Schema.builder().type("ARRAY")
+                        .items(Schema.builder().type("STRING").build())
+                        .build()),
+                Map.entry("tags",
+                    Schema.builder().type("ARRAY")
+                        .items(Schema.builder().type("STRING").build())
+                        .build()),
+                Map.entry("ingredients",
+                    Schema.builder().type("ARRAY").items(
+                        Schema.builder().type("OBJECT")
+                            .properties(Map.ofEntries(
+                                Map.entry("id",
+                                    Schema.builder().type("NULL").build()),
+                                Map.entry("recipeId",
+                                    Schema.builder().type("NULL").build()),
+                                Map.entry("ingredient",
+                                    Schema.builder().type("STRING").build()),
+                                Map.entry("quantity",
+                                    Schema.builder().type("NUMBER").build()),
+                                Map.entry("unit",
+                                    Schema.builder().type("STRING").build()),
+                                Map.entry("allergenTags",
+                                    Schema.builder().type("ARRAY")
+                                        .items(Schema.builder()
+                                            .type("STRING").build())
+                                        .build())
+                                )).build())
+                        .build()),
+                Map.entry("nutrition",
+                    Schema.builder().type("OBJECT").properties(
+                        Map.ofEntries(
+                            Map.entry("summary",
+                                Schema.builder().type("NULL").build())
+                        )
+                        )
+                    .build()),
+                Map.entry("calories",
+                    Schema.builder().type("NUMBER").build()),
+                Map.entry("carbohydrates",
+                    Schema.builder().type("NUMBER").build()),
+                Map.entry("fat",
+                    Schema.builder().type("NUMBER").build()),
+                Map.entry("fiber",
+                    Schema.builder().type("NUMBER").build()),
+                Map.entry("protein",
+                    Schema.builder().type("NUMBER").build())
+            ))
+            .required(List.of("title", "ingredients"))
+            .build();
 
         GenerateContentConfig config = GenerateContentConfig.builder()
                 .responseMimeType("application/json")
@@ -139,7 +179,12 @@ public class AIRecipeService {
         return parseRecipe(response.text());
     }
 
-
+    /**
+     * This method is used to parse a json object
+     * and create a recipe object.
+     * @param json a json object that will be parsed.
+     * @return Returns a recipe object.
+     */
     private Recipe parseRecipe(final String json) {
         try {
             JsonNode node = objectMapper.readTree(json);
