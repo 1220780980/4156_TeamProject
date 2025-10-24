@@ -30,22 +30,37 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class User {
 
-     /** Unique identifier for the user. */
-     @Id
-     @GeneratedValue(strategy = GenerationType.IDENTITY)
-     @Column(name = "user_id")
-     private Integer userId;
+    /** Maximum length for user name. */
+    private static final int NAME_MAX_LENGTH = 255;
+    
+    /** Precision for height and weight fields. */
+    private static final int DIM_PRECISION = 5;
+    
+    /** Scale for height and weight fields. */
+    private static final int DIM_SCALE = 2;
+    
+    /** Precision for budget field. */
+    private static final int BUDGET_PREC = 10;
+    
+    /** Scale for budget field. */
+    private static final int BUDGET_SCALE = 2;
 
-     /** Name of the user. */
-     @Column(name = "name", nullable = false, length = 255)
-     private String name;
+    /** Unique identifier for the user. */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
+    private Integer userId;
+
+    /** Name of the user. */
+    @Column(name = "name", nullable = false, length = NAME_MAX_LENGTH)
+    private String name;
 
     /** Height of the user in centimeters. */
-    @Column(name = "height", precision = 5, scale = 2)
+    @Column(name = "height", precision = DIM_PRECISION, scale = DIM_SCALE)
     private BigDecimal height;
 
     /** Weight of the user in kilograms. */
-    @Column(name = "weight", precision = 5, scale = 2)
+    @Column(name = "weight", precision = DIM_PRECISION, scale = DIM_SCALE)
     private BigDecimal weight;
 
     /** Age of the user. */
@@ -66,7 +81,7 @@ public class User {
     private String[] dislikes;
 
     /** User's budget for meals. */
-    @Column(name = "budget", precision = 10, scale = 2)
+    @Column(name = "budget", precision = BUDGET_PREC, scale = BUDGET_SCALE)
     private BigDecimal budget;
 
     /** User's cooking skill level. */
