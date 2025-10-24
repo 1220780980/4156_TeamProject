@@ -196,4 +196,4 @@ coverage: 60% for iteration 1
 ```
 mvn checkstyle:check
 ```
-![alt text](<Screenshot 2025-10-23 at 11.44.26 PM.png>)
+![alt text](<style_check_iteration_1.png>)
