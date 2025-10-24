@@ -27,7 +27,7 @@ public class UserHealthHistory {
 
     /** Precision for health measurement fields. */
     private static final int HEALTH_PRECISION = 5;
-    
+
     /** Scale for health measurement fields. */
     private static final int HEALTH_SCALE = 2;
 
@@ -48,14 +48,14 @@ public class UserHealthHistory {
     /**
      * User's weight in kilograms.
      */
-    @Column(name = "weight", nullable = false, 
+    @Column(name = "weight", nullable = false,
             precision = HEALTH_PRECISION, scale = HEALTH_SCALE)
     private BigDecimal weight;
 
     /**
      * User's height in centimeters.
      */
-    @Column(name = "height", nullable = false, 
+    @Column(name = "height", nullable = false,
             precision = HEALTH_PRECISION, scale = HEALTH_SCALE)
     private BigDecimal height;
 
