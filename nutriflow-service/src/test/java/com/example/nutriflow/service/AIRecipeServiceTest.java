@@ -11,6 +11,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.List;
@@ -110,6 +111,19 @@ class AIRecipeServiceTest {
         assertBigDecimalEquals("8", result.getFiber());
         assertBigDecimalEquals("18", result.getProtein());
         assertEquals(99, result.getPopularityScore());
+    }
+
+    @Test
+    @DisplayName("parseRecipe throws IllegalStateException when JSON is invalid")
+    void parseRecipe_throwsIllegalStateExceptionWhenJsonInvalid() {
+        InvocationTargetException exception = assertThrows(
+                InvocationTargetException.class,
+                () -> invokeParseRecipe("not-json")
+        );
+
+        Throwable cause = exception.getCause();
+        assertInstanceOf(IllegalStateException.class, cause);
+        assertEquals("Failed to parse recipe response", cause.getMessage());
     }
 
     private void injectDependency(final String fieldName, final Object value) throws Exception {
