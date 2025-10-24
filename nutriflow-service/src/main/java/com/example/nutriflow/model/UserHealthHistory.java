@@ -25,6 +25,12 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class UserHealthHistory {
 
+    /** Precision for health measurement fields. */
+    private static final int HEALTH_PRECISION = 5;
+    
+    /** Scale for health measurement fields. */
+    private static final int HEALTH_SCALE = 2;
+
     /**
      * Unique identifier for the health history record.
      */
@@ -42,20 +48,22 @@ public class UserHealthHistory {
     /**
      * User's weight in kilograms.
      */
-    @Column(name = "weight", nullable = false, precision = 5, scale = 2)
+    @Column(name = "weight", nullable = false, 
+            precision = HEALTH_PRECISION, scale = HEALTH_SCALE)
     private BigDecimal weight;
 
     /**
      * User's height in centimeters.
      */
-    @Column(name = "height", nullable = false, precision = 5, scale = 2)
+    @Column(name = "height", nullable = false, 
+            precision = HEALTH_PRECISION, scale = HEALTH_SCALE)
     private BigDecimal height;
 
     /**
      * Body Mass Index.
      * BMI is auto-calculated by database as a generated column.
      */
-    @Column(name = "bmi", precision = 5, scale = 2,
+    @Column(name = "bmi", precision = HEALTH_PRECISION, scale = HEALTH_SCALE,
             insertable = false, updatable = false)
     private BigDecimal bmi;
 
