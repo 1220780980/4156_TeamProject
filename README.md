@@ -183,3 +183,13 @@ Tables:
 - favorite_recipes (future use)
 - recipe_ingredients
 - substitution_rules
+
+## Test Coverage
+```shell
+mvn clean verify
+open target/site/jacoco/index.html
+```
+coverage: 60% for iteration 1
+![alt text](coverage_iteration_1.png)
+
+## Checkstyle
