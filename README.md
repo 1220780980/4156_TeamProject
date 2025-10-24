@@ -138,6 +138,20 @@ Modules:
     - `GET /api/recipes/{userId}/favorites` → Retrieve user’s favorite recipes
     - `DELETE /api/recipes/{userId}/favorites/{recipeId}` → Remove a recipe from favorites
 
+### AI Recipe Management
+Purpose: Allow users to look for recipes with a specific ingredient and get AI-recommended recipes. 
+
+- Service: AIRecipeService
+    - `getAIRecipe(String ingredient)` - returns a recipe with the given ingredient.  
+    - `searchIngredient(String ingredient)` - searches the repository to see whether a recipe with the given ingredient exists.
+    - `getAIRecommendedRecipe()` - returns an AI recommended recipe. 
+    - `requestRecipe(String prompt)` - sets up a structured output schema and makes an LLM query with the given prompt. 
+    - `parseRecipe(String json)` - parses the given json object and creates a Recipe object. 
+    - and a few minor helper functions.
+- Controller: AIRecipeController 
+    - `GET /api/ai/recipes/ingredient/{ingredient}` - retrieves a recipe with the given ingredient (pulls from the repository if a recipe with the given ingredient exists, otherwise asks an LLM to generate a recipe).
+    - `GET /api/ai/recipes/recommendation` - returns a recipe recommended by an LLM. 
+
 ### Substitution Management
 
 Purpose: Detect allergens in recipes and suggest alternative ingredients based on user dietary preferences.
@@ -154,7 +168,6 @@ Modules:
 - Controller: SubstitutionController
     - `POST /substitutions/check` checks if a recipe contains ingredients a user should avoid
     - `GET /substitutions?ingredient={name}&avoid={category}` retrieves substitution suggestions for a given ingredient
-
 
 
 ## Database & Data Seeding
