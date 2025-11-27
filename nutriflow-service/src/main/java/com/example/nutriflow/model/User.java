@@ -69,7 +69,7 @@ public class User {
 
     /** Biological sex of the user. */
     @Enumerated(EnumType.STRING)
-    @Column(name = "sex", columnDefinition = "sex_type")
+    @Column(name = "sex")
     private SexType sex;
 
     /** List of user's food allergies. */
@@ -86,8 +86,7 @@ public class User {
 
     /** User's cooking skill level. */
     @Enumerated(EnumType.STRING)
-    @Column(name = "cooking_skill_level",
-            columnDefinition = "cooking_skill_level")
+    @Column(name = "cooking_skill_level")
     private CookingSkillLevel cookingSkillLevel;
 
     /** List of cooking equipment available to the user. */

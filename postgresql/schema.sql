@@ -1,11 +1,6 @@
 CREATE SCHEMA IF NOT EXISTS nutriflow;
 SET search_path TO nutriflow;
 
--- gender type
-CREATE TYPE sex_type AS ENUM ('MALE', 'FEMALE', 'OTHER');
-
--- cooking skill level type
-CREATE TYPE cooking_skill_level AS ENUM ('BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT');
 
 --
 -- create table 'users'
@@ -16,11 +11,11 @@ CREATE TABLE IF NOT EXISTS users (
     height DECIMAL(5,2),
     weight DECIMAL(5,2),
     age INTEGER,
-    sex sex_type,
+    sex TYPE VARCHAR(50),
     allergies TEXT[],
     dislikes TEXT[],
     budget DECIMAL(10,2),
-    cooking_skill_level cooking_skill_level DEFAULT 'BEGINNER',
+    cooking_skill_level TYPE VARCHAR(50),
     equipments TEXT[],
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

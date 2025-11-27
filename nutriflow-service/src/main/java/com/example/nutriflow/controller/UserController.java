@@ -2,6 +2,8 @@ package com.example.nutriflow.controller;
 
 import com.example.nutriflow.model.User;
 import com.example.nutriflow.model.UserTarget;
+import com.example.nutriflow.model.dto.CreateUserRequestDTO;
+import com.example.nutriflow.model.dto.CreateUserResponseDTO;
 import com.example.nutriflow.model.dto.HealthStatisticsResponseDTO;
 import com.example.nutriflow.model.dto.UpdateUserRequestDTO;
 import com.example.nutriflow.model.dto.UpdateUserTargetRequestDTO;
@@ -9,11 +11,14 @@ import com.example.nutriflow.service.HealthStatisticsService;
 import com.example.nutriflow.service.UserService;
 import com.example.nutriflow.service.UserTargetService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -43,6 +48,37 @@ public class UserController {
     @Autowired
     private HealthStatisticsService healthStatisticsService;
 
+
+    /**
+     * POST endpoint to create a new user.
+     * Supports client identification via headers for tracking purposes.
+     * 
+     * @param request the request body containing user information
+     * @param clientId optional header identifying the calling client
+     * @param endUserId optional header identifying the end user in client system
+     * @return ResponseEntity containing the created user information
+     */
+    @PostMapping
+    public ResponseEntity<CreateUserResponseDTO> createUser(
+            @RequestBody final CreateUserRequestDTO request,
+            @RequestHeader(value = "X-Client-Id", required = false) final String clientId,
+            @RequestHeader(value = "X-End-User-Id", required = false) final String endUserId) {
+
+        if (clientId != null && endUserId != null) {
+            // Log the client and end user information
+            System.out.println("User creation requested by client: " 
+            + clientId + ", end user: " + endUserId);
+        }
+
+        try {
+            CreateUserResponseDTO response = userService.createUser(request);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new CreateUserResponseDTO(null, null, 
+                    "Error creating user"));
+        }
+    }
 
     /**
      * GET endpoint to retrieve a user by their ID.
