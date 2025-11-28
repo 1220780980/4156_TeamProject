@@ -6,7 +6,6 @@ import com.example.nutriflow.service.repository.FavoriteRecipeRepository;
 import com.example.nutriflow.service.repository.RecipeRepository;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.junit.jupiter.api.DisplayName;

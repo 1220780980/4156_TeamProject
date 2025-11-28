@@ -1,6 +1,8 @@
 package com.example.nutriflow.service;
 
 import com.example.nutriflow.model.User;
+import com.example.nutriflow.model.dto.CreateUserRequestDTO;
+import com.example.nutriflow.model.dto.CreateUserResponseDTO;
 import com.example.nutriflow.model.dto.UpdateUserRequestDTO;
 import com.example.nutriflow.service.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,44 @@ public class UserService {
      */
     @Autowired
     private UserRepository userRepository;
+
+    /**
+     * Create a new user with the provided information.
+     *
+     * @param request the request containing user information
+     * @return CreateUserResponseDTO containing the created user's ID and info
+     */
+    @Transactional
+    public CreateUserResponseDTO createUser(final CreateUserRequestDTO request) {
+        User newUser = new User();
+        
+        newUser.setName(request.getName() != null ? request.getName() : "User");
+        
+        // Set optional fields
+        if (request.getAge() != null) {
+            newUser.setAge(request.getAge());
+        }
+        if (request.getHeight() != null) {
+            newUser.setHeight(request.getHeight());
+        }
+        if (request.getWeight() != null) {
+            newUser.setWeight(request.getWeight());
+        }
+        if (request.getSex() != null) {
+            newUser.setSex(request.getSex());
+        }
+        
+        // Save the user
+        User savedUser = userRepository.save(newUser);
+        
+        // Create and return response
+        CreateUserResponseDTO response = new CreateUserResponseDTO();
+        response.setUserId(savedUser.getUserId());
+        response.setName(savedUser.getName());
+        response.setMessage("User created successfully");
+        
+        return response;
+    }
 
     /**
      * Find a user by their user ID.
