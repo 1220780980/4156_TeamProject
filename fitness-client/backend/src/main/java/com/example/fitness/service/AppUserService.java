@@ -40,6 +40,17 @@ public class AppUserService {
      */
     @Transactional
     public RegistrationResponse registerUser(RegistrationRequest request) {
+        // Validate registration request
+        if (request == null) {
+            throw new IllegalArgumentException("Registration request cannot be null");
+        }
+        if (request.getEmail() == null || request.getEmail().isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be null or empty");
+        }
+        if (request.getPassword() == null || request.getPassword().isEmpty()) {
+            throw new IllegalArgumentException("Password cannot be null or empty");
+        }
+        
         if (appUserRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already exists: " + request.getEmail());
         }
@@ -107,6 +118,14 @@ public class AppUserService {
      * @throws RuntimeException if authentication fails
      */
     public LoginResponse loginUser(String email, String password) {
+        // Validate input parameters
+        if (email == null || email.isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be null or empty");
+        }
+        if (password == null || password.isEmpty()) {
+            throw new IllegalArgumentException("Password cannot be null or empty");
+        }
+
         AppUser user = appUserRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Invalid email or password"));
 
