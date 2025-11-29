@@ -27,3 +27,8 @@ replay_pid*
 .vscode/
 nutriflow-service/target/
 fitness-client/backend/target/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
