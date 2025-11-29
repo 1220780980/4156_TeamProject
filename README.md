@@ -4,24 +4,29 @@
 NutriFlow is a personalized nutrition and recipe recommendation platform.
 This milestone implements core backend modules for user data management, pantry tracking, and recipe retrieval, built with Spring Boot, Spring Data JPA, and PostgreSQL.
 
-## How to Run
-1. use Java 17
+## Quick Start
+
+### Using convenience scripts
+```shell
+./setup.sh    # Check environment setup
+./start.sh    # Start the service (auto-switches to Java 17)
+./test.sh     # Run tests and generate reports
+```
+
+### Manual setup
+1. Use Java 17
 ```shell
 export JAVA_HOME=$(/usr/libexec/java_home -v 17)
 export PATH="$JAVA_HOME/bin:$PATH"
 java -version
-```  
-(Ensure it prints a Java 17 version.)
+```
 
-2. Compile
+2. Start the service
 ```shell
-mvn clean compile
-```
-3. Run the application
-```
+cd nutriflow-service
 mvn spring-boot:run
-```   
-The service will start on `http://localhost:8080` by default.
+```
+The service will start on `http://localhost:8080`.
 
 ## Testing Frameworks
 This project uses the following testing and mocking frameworks:
@@ -169,6 +174,39 @@ Modules:
     - `POST /substitutions/check` checks if a recipe contains ingredients a user should avoid
     - `GET /substitutions?ingredient={name}&avoid={category}` retrieves substitution suggestions for a given ingredient
 
+### Meal Plan Generation
+
+Purpose: Generate daily and weekly meal plans based on user nutritional targets and preferences, integrating with recipe database to ensure consistency.
+
+Modules:
+- Entities:
+    - Meal: Individual meal with nutritional info (calories, protein, carbs, fat, fiber)
+    - DailyMealPlan: Daily plan containing breakfast, lunch, and dinner
+    - WeeklyMealPlan: 7-day meal plan
+- Repositories: MealRepository, DailyMealPlanRepository, WeeklyMealPlanRepository
+- Service: MealPlanService
+    - `createDailyMealPlan(CreateDailyMealPlanRequestDTO)` generates meals based on user targets and preferences
+    - `createWeeklyMealPlan(CreateWeeklyMealPlanRequestDTO)` generates 7-day meal plan
+    - Integrates with RecipeService to retrieve recipes
+    - Filters recipes based on allergies and dietary restrictions
+    - Matches recipes to calorie targets (30% breakfast, 35% lunch, 35% dinner)
+- Controller: MealPlanController
+    - `POST /api/mealplans/daily` create daily meal plan
+    - `GET /api/mealplans/daily/{id}` retrieve daily meal plan
+    - `GET /api/mealplans/daily/user/{userId}` get user's daily plans
+    - `POST /api/mealplans/weekly` create weekly meal plan
+    - `GET /api/mealplans/weekly/{id}` retrieve weekly meal plan
+    - `GET /api/mealplans/weekly/user/{userId}` get user's weekly plans
+
+### Workout Tracking (Optional)
+
+Purpose: Track workout sessions and plans.
+
+Modules:
+- Entities:
+    - Workout: Individual workout session with calories burned
+    - WorkoutPlan: User workout plan with schedule
+
 
 ## Database & Data Seeding
 
@@ -180,9 +218,14 @@ Tables:
 - user_health_history
 - recipes
 - pantry_items
-- favorite_recipes (future use)
+- favorite_recipes
 - recipe_ingredients
 - substitution_rules
+- meals
+- daily_meal_plans
+- weekly_meal_plans
+- workouts
+- workout_plans
 
 ## Test Coverage
 ```shell
@@ -190,10 +233,10 @@ mvn clean verify
 open target/site/jacoco/index.html
 ```
 coverage: 60% for iteration 1
-![alt text](coverage_iteration_1.png)
+![alt text](docs/coverage_iteration_1.png)
 
 ## Checkstyle
 ```
 mvn checkstyle:check
 ```
-![alt text](<style_check_iteration_1.png>)
+![alt text](docs/style_check_iteration_1.png)
