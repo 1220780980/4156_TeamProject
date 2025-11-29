@@ -1,7 +1,9 @@
 package com.example.nutriflow.model;
 
-import com.example.nutriflow.model.enums.SexType;
+import com.example.nutriflow.model.enums.ActivityLevel;
 import com.example.nutriflow.model.enums.CookingSkillLevel;
+import com.example.nutriflow.model.enums.FitnessGoal;
+import com.example.nutriflow.model.enums.SexType;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -71,6 +73,16 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(name = "sex")
     private SexType sex;
+
+    /** Activity level of the user. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "activity_level")
+    private ActivityLevel activityLevel;
+
+    /** Fitness goal of the user. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "fitness_goal")
+    private FitnessGoal fitnessGoal;
 
     /** List of user's food allergies. */
     @Column(name = "allergies", columnDefinition = "text[]")
