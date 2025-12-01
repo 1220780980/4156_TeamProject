@@ -6,14 +6,18 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import com.example.nutriflow.model.PantryItem;
 import com.example.nutriflow.model.Recipe;
 import com.example.nutriflow.model.RecipeIngredient;
+import com.example.nutriflow.model.User;
+import com.example.nutriflow.model.enums.CookingSkillLevel;
 import com.example.nutriflow.service.repository.RecipeIngredientRepository;
-import com.example.nutriflow.service.repository.RecipeRepository;
 import com.google.genai.Client;
 import com.google.genai.types.GenerateContentConfig;
 import com.google.genai.types.GenerateContentResponse;
@@ -41,7 +45,13 @@ public class AIRecipeService {
     private RecipeIngredientRepository recipeIngredientRepository;
     /** Service handling recipe-related logic. */
     @Autowired
-    private RecipeRepository recipeRepository;
+    private RecipeService recipeService;
+    /** Service handling user-related logic. */
+    @Autowired
+    private UserService userService;
+    /** Service handling pnatry-related logic. */
+    @Autowired
+    private PantryService pantryService;
     /**
      * Initializes an AIRecipeService object.
      *
@@ -73,11 +83,12 @@ public class AIRecipeService {
         final String finalPrompt =
             "Generate a delicious recipe with the following ingredient: "
                 + ingredient;
-        return requestRecipe(finalPrompt);
+        Recipe recipe = requestRecipe(finalPrompt);
+        return recipe;
     }
 
     private Optional<Recipe> searchIngredient(final String ingredient) {
-        List<Recipe> allRecipes = recipeRepository.findAll();
+        List<Recipe> allRecipes = recipeService.getAllRecipes();
         for (Recipe recipe : allRecipes) {
             Integer recipeId = recipe.getRecipeId();
             final List<RecipeIngredient> recipeIngredients =
@@ -100,8 +111,60 @@ public class AIRecipeService {
      */
     public Recipe getAIRecommendedRecipe() {
         String finalPrompt = "Generate a delicious recipe";
-        return requestRecipe(finalPrompt);
+        Recipe recipe = requestRecipe(finalPrompt);
+        return recipe;
 }
+
+    /**
+     * Generates a recipe using the user information.
+     *
+     * @param userId the user identifier
+     * @return Returns a recipe object with the found or generated recipe.
+     */
+    public Recipe getUserRecipe(final Integer userId) {
+        User user = userService.getUserById(userId)
+            .orElseThrow(() -> new IllegalArgumentException("User not found: "
+                + userId));
+        BigDecimal budget = user.getBudget();
+        CookingSkillLevel cookingSkill = user.getCookingSkillLevel();
+        String budgetText = budget != null
+            ? "$" + budget : "unspecified budget";
+        String cookingSkillText = cookingSkill != null
+            ? cookingSkill.toString() : "unspecified cooking skill";
+        String allergies = Arrays.toString(user.getAllergies() != null
+            ? user.getAllergies() : new String[0]);
+        String dislikes = Arrays.toString(user.getDislikes() != null
+            ? user.getDislikes() : new String[0]);
+        String equipments = Arrays.toString(user.getEquipments() != null
+            ? user.getEquipments() : new String[0]);
+
+        List<PantryItem> pantryItems = pantryService.getPantryItems(userId);
+        String pantryText = pantryItems.isEmpty()
+            ? "no pantry items"
+            : pantryItems.stream()
+                .map(item -> {
+                    String qty = item.getQuantity() != null
+                        ? item.getQuantity().toPlainString() : "";
+                    String unit = item.getUnit() != null
+                        ? item.getUnit() : "";
+                    String suffix = qty.isBlank() && unit.isBlank()
+                        ? "" : " (" + qty + (unit.isBlank()
+                            ? "" : " " + unit) + ")";
+                    return item.getName() + suffix;
+                })
+                .collect(Collectors.joining(", "));
+        final String finalPrompt =
+        "Generate a delicious meal recipe given what you know about the user."
+            + "The user has the following allergies: " + allergies + "; "
+            + "the following dislikes: " + dislikes + "; "
+            + "the following budget: " + budgetText + "; "
+            + "the following cooking skill level: " + cookingSkillText + "; "
+            + "the following kitchen equipments: " + equipments + "; "
+            + "the following pantry items: " + pantryText + "; ";
+
+        Recipe recipe = requestRecipe(finalPrompt);
+        return recipe;
+    }
 
     /**
      * A method that creates a structured output schema
@@ -146,6 +209,8 @@ public class AIRecipeService {
                                         .build())
                                 )).build())
                         .build()),
+                Map.entry("instructions",
+                    Schema.builder().type("STRING").build()),
                 Map.entry("nutrition",
                     Schema.builder().type("OBJECT").properties(
                         Map.ofEntries(
@@ -197,6 +262,7 @@ public class AIRecipeService {
             recipe.setCuisines(readStringArray(node.get("cuisines")));
             recipe.setTags(readStringArray(node.get("tags")));
             recipe.setIngredients(writeJsonOrEmpty(node.get("ingredients")));
+            recipe.setInstructions(node.path("instructions").asText(null));
             if (node.hasNonNull("nutrition")) {
                 recipe.setNutrition(writeJsonOrEmpty(node.get("nutrition")));
             }

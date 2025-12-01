@@ -62,6 +62,12 @@ public class Recipe {
     private String ingredients;
 
     /**
+     * Structured cooking instructions as text.
+     */
+    @Column(name = "instructions")
+    private String instructions;
+
+    /**
      * Structured nutrition payload as JSON (JSONB in PostgreSQL).
      * May include detailed nutrient breakdown per serving.
      */

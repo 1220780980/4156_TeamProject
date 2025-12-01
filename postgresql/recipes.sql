@@ -13,6 +13,38 @@ VALUES
     (7, 'Smoothie Bowl (Berry Blast)', 7, 310, 45, 8, 7, 9, 92),
     (8, 'Salmon with Asparagus', 25, 480, 10, 28, 4, 42, 97);
 
+UPDATE nutriflow.recipes SET instructions =
+  'Toast bread; mash avocado with salt and lemon; spread; top with egg or chili flakes; serve.'
+WHERE recipe_id = 1;
+
+UPDATE nutriflow.recipes SET instructions =
+  'Simmer oats in milk or water; stir until creamy; top with sliced banana, honey, and nuts.'
+WHERE recipe_id = 2;
+
+UPDATE nutriflow.recipes SET instructions =
+  'Season chicken; grill until cooked; slice; toss greens, tomatoes, cucumber; add chicken; drizzle vinaigrette.'
+WHERE recipe_id = 3;
+
+UPDATE nutriflow.recipes SET instructions =
+  'Heat oil; stir fry mixed veggies with garlic and soy; add splash of water to steam; finish with sesame oil.'
+WHERE recipe_id = 4;
+
+UPDATE nutriflow.recipes SET instructions =
+  'Layer yogurt, granola, and berries in a glass; drizzle honey; serve immediately.'
+WHERE recipe_id = 5;
+
+UPDATE nutriflow.recipes SET instructions =
+  'Cook quinoa; sauté onions and peppers; add black beans and spices; serve over quinoa with lime and cilantro.'
+WHERE recipe_id = 6;
+
+UPDATE nutriflow.recipes SET instructions =
+  'Blend frozen berries, banana, and milk until thick; pour into bowl; top with granola and sliced fruit.'
+WHERE recipe_id = 7;
+
+UPDATE nutriflow.recipes SET instructions =
+  'Season salmon; sear or roast until flaky; roast asparagus with oil and salt; serve together with lemon.'
+WHERE recipe_id = 8;
+
 -- ========================
 -- Favorite Recipes
 -- ========================
