@@ -161,7 +161,7 @@ public class AIRecipeService {
             + "the following budget: " + budgetText + "; "
             + "the following cooking skill level: " + cookingSkillText + "; "
             + "the following kitchen equipments: " + equipments + "; "
-            + "the following pantry items: " + pantryText + "; ";
+            + "the following pantry items: " + pantryText + ". ";
 
         Recipe recipe = requestRecipe(finalPrompt);
         return recipe;
