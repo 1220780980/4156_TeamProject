@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
 /**
  * REST controller for managing AI recipe-related operations.
  * Provides endpoints for retrieving ai generated recipes.
@@ -62,4 +61,25 @@ public class AIRecipeController {
             .body(Map.of("error", e.getMessage()));
         }
     }
+
+    /**
+     * GET endpoint to generate a recipe given the user's information.
+     * Example:
+     * /api/ai/recipes/user/{userId} - returns a recipe
+     * using the user's information
+     * @param userId user identifier
+     * @return ResponseEntity containing the appropriate recipe
+     */
+    @GetMapping("user/{userId}")
+    public ResponseEntity<?> getUserRecipe(
+        final @PathVariable Integer userId) {
+        try {
+            return ResponseEntity.ok(
+                aiRecipeService.getUserRecipe(userId));
+        } catch (Exception e) {
+        return ResponseEntity.badRequest()
+            .body(Map.of("error", e.getMessage()));
+        }
+    }
+
 }

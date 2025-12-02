@@ -127,6 +127,7 @@ CREATE TABLE IF NOT EXISTS recipes (
     cuisines TEXT[],
     tags TEXT[],
     ingredients JSONB,
+    instructions TEXT,
     nutrition JSONB,
     calories DECIMAL(7,2),
     carbohydrates DECIMAL(7,2),
