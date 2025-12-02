@@ -18,6 +18,7 @@ import com.example.nutriflow.model.RecipeIngredient;
 import com.example.nutriflow.model.User;
 import com.example.nutriflow.model.enums.CookingSkillLevel;
 import com.example.nutriflow.service.repository.RecipeIngredientRepository;
+import com.example.nutriflow.service.repository.RecipeRepository;
 import com.google.genai.Client;
 import com.google.genai.types.GenerateContentConfig;
 import com.google.genai.types.GenerateContentResponse;
@@ -45,7 +46,7 @@ public class AIRecipeService {
     private RecipeIngredientRepository recipeIngredientRepository;
     /** Service handling recipe-related logic. */
     @Autowired
-    private RecipeService recipeService;
+    private RecipeRepository recipeRepository;
     /** Service handling user-related logic. */
     @Autowired
     private UserService userService;
@@ -88,7 +89,7 @@ public class AIRecipeService {
     }
 
     private Optional<Recipe> searchIngredient(final String ingredient) {
-        List<Recipe> allRecipes = recipeService.getAllRecipes();
+        List<Recipe> allRecipes = recipeRepository.findAll();
         for (Recipe recipe : allRecipes) {
             Integer recipeId = recipe.getRecipeId();
             final List<RecipeIngredient> recipeIngredients =
