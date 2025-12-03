@@ -1,0 +1,95 @@
+CREATE SCHEMA IF NOT EXISTS nutriflow;
+
+CREATE TABLE nutriflow.users (
+    user_id INT NOT NULL AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    height DECIMAL(5,2),
+    weight DECIMAL(5,2),
+    age INT,
+    sex VARCHAR(50),
+    allergies VARCHAR(1000),
+    dislikes VARCHAR(1000),
+    budget DECIMAL(10,2),
+    cooking_skill_level VARCHAR(50),
+    equipments VARCHAR(1000),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id)
+);
+
+CREATE TABLE nutriflow.user_targets (
+    target_id INT NOT NULL AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    calories DECIMAL(7,2),
+    protein DECIMAL(6,2),
+    fiber DECIMAL(6,2),
+    fat DECIMAL(6,2),
+    carbs DECIMAL(6,2),
+    iron DECIMAL(6,2),
+    calcium DECIMAL(6,2),
+    vitamin_a DECIMAL(6,2),
+    vitamin_c DECIMAL(6,2),
+    vitamin_d DECIMAL(6,2),
+    sodium DECIMAL(6,2),
+    potassium DECIMAL(6,2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (target_id),
+    FOREIGN KEY (user_id) REFERENCES nutriflow.users(user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE nutriflow.user_health_history (
+    history_id INT NOT NULL AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    weight DECIMAL(5,2) NOT NULL,
+    height DECIMAL(5,2) NOT NULL,
+    bmi DECIMAL(5,2),
+    recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (history_id),
+    FOREIGN KEY (user_id) REFERENCES nutriflow.users(user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE nutriflow.recipes (
+    recipe_id INT NOT NULL AUTO_INCREMENT,
+    user_id INT,
+    title VARCHAR(500) NOT NULL,
+    instructions TEXT,
+    cook_time INT,
+    calories DECIMAL(7,2),
+    protein DECIMAL(6,2),
+    carbohydrates DECIMAL(6,2),
+    fat DECIMAL(6,2),
+    fiber DECIMAL(6,2),
+    iron DECIMAL(6,2),
+    calcium DECIMAL(6,2),
+    vitamin_a DECIMAL(6,2),
+    vitamin_c DECIMAL(6,2),
+    vitamin_d DECIMAL(6,2),
+    potassium DECIMAL(6,2),
+    sodium DECIMAL(6,2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (recipe_id),
+    FOREIGN KEY (user_id) REFERENCES nutriflow.users(user_id) ON DELETE SET NULL
+);
+
+CREATE TABLE nutriflow.pantry_items (
+    pantry_item_id INT NOT NULL AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    ingredient_name VARCHAR(255) NOT NULL,
+    quantity DECIMAL(10,2),
+    unit VARCHAR(50),
+    expiration_date DATE,
+    added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (pantry_item_id),
+    FOREIGN KEY (user_id) REFERENCES nutriflow.users(user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE nutriflow.favorite_recipes (
+    favorite_id INT NOT NULL AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    recipe_id INT NOT NULL,
+    added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (favorite_id),
+    FOREIGN KEY (user_id) REFERENCES nutriflow.users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (recipe_id) REFERENCES nutriflow.recipes(recipe_id) ON DELETE CASCADE
+);

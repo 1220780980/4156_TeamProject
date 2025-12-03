@@ -85,6 +85,24 @@ public class NutriflowClient {
         }
     }
 
+    public Map<String, Object> getAIRecipeForUser(Long nutriflowUserId, Long appUserId) {
+        String url = nutriflowBaseUrl + "/ai/recipes/user/" + nutriflowUserId;
+        HttpHeaders headers = createHeaders(appUserId);
+        HttpEntity<Void> request = new HttpEntity<>(headers);
+        
+        try {
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                request,
+                new ParameterizedTypeReference<Map<String, Object>>() {}
+            );
+            return response.getBody();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get AI recipe from NutriFlow: " + e.getMessage(), e);
+        }
+    }
+
     private HttpHeaders createHeaders(Long appUserId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
