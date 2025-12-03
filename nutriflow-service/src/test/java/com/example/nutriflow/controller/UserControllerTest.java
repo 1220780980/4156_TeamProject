@@ -2,6 +2,8 @@ package com.example.nutriflow.controller;
 
 import com.example.nutriflow.model.User;
 import com.example.nutriflow.model.UserTarget;
+import com.example.nutriflow.model.dto.CreateUserRequestDTO;
+import com.example.nutriflow.model.dto.CreateUserResponseDTO;
 import com.example.nutriflow.model.dto.HealthStatisticsResponseDTO;
 import com.example.nutriflow.model.dto.UpdateUserRequestDTO;
 import com.example.nutriflow.model.dto.UpdateUserTargetRequestDTO;
@@ -88,6 +90,107 @@ public class UserControllerTest {
         sampleUserTarget.setPotassium(new BigDecimal("3500.00"));
         sampleUserTarget.setCreatedAt(LocalDateTime.now());
         sampleUserTarget.setUpdatedAt(LocalDateTime.now());
+    }
+
+    // ===============================================================
+    // POST /api/users - Create User Tests
+    // ===============================================================
+
+    @Test
+    void testCreateUser_TypicalValidInput() throws Exception {
+        CreateUserRequestDTO request = new CreateUserRequestDTO();
+        request.setName("Jane Doe");
+        request.setAge(25);
+        request.setHeight(new BigDecimal("165.00"));
+        request.setWeight(new BigDecimal("60.00"));
+        request.setSex(SexType.FEMALE);
+
+        CreateUserResponseDTO response = new CreateUserResponseDTO(
+            1, 
+            "Jane Doe", 
+            "User created successfully"
+        );
+
+        when(userService.createUser(any(CreateUserRequestDTO.class))).thenReturn(response);
+
+        mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.userId").value(1))
+                .andExpect(jsonPath("$.name").value("Jane Doe"))
+                .andExpect(jsonPath("$.message").value("User created successfully"));
+    }
+
+    @Test
+    void testCreateUser_AtypicalValidInput() throws Exception {
+        CreateUserRequestDTO request = new CreateUserRequestDTO();
+        request.setName(null);  // Will default to "User"
+
+        CreateUserResponseDTO response = new CreateUserResponseDTO(
+            2, 
+            "User", 
+            "User created successfully"
+        );
+
+        when(userService.createUser(any(CreateUserRequestDTO.class))).thenReturn(response);
+
+        mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").value(2))
+                .andExpect(jsonPath("$.name").value("User"))
+                .andExpect(jsonPath("$.message").value("User created successfully"));
+    }
+
+    @Test
+    void testCreateUser_InvalidInput() throws Exception {
+        CreateUserRequestDTO request = new CreateUserRequestDTO();
+        request.setName("Test User");
+
+        when(userService.createUser(any(CreateUserRequestDTO.class)))
+                .thenThrow(new RuntimeException("Database connection failed"));
+
+        mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.userId").isEmpty())
+                .andExpect(jsonPath("$.name").isEmpty())
+                .andExpect(jsonPath("$.message").value("Error creating user"));
+    }
+
+    @Test
+    void testCreateUser_AllFieldsProvided() throws Exception {
+        CreateUserRequestDTO request = new CreateUserRequestDTO();
+        request.setName("Complete User");
+        request.setAge(30);
+        request.setHeight(new BigDecimal("180.00"));
+        request.setWeight(new BigDecimal("75.00"));
+        request.setSex(SexType.MALE);
+        request.setAllergies(new String[]{"peanuts", "shellfish"});
+        request.setDislikes(new String[]{"broccoli"});
+        request.setBudget(new BigDecimal("500.00"));
+        request.setCookingSkill(CookingSkillLevel.ADVANCED);
+        request.setEquipments(new String[]{"oven", "stove", "blender"});
+
+        CreateUserResponseDTO response = new CreateUserResponseDTO(
+            3, 
+            "Complete User", 
+            "User created successfully"
+        );
+
+        when(userService.createUser(any(CreateUserRequestDTO.class))).thenReturn(response);
+
+        mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").value(3))
+                .andExpect(jsonPath("$.name").value("Complete User"))
+                .andExpect(jsonPath("$.message").value("User created successfully"));
     }
 
     // ===============================================================

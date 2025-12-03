@@ -30,11 +30,12 @@ public class UserService {
      * @return CreateUserResponseDTO containing the created user's ID and info
      */
     @Transactional
-    public CreateUserResponseDTO createUser(final CreateUserRequestDTO request) {
+    public CreateUserResponseDTO createUser(
+        final CreateUserRequestDTO request) {
         User newUser = new User();
-        
+
         newUser.setName(request.getName() != null ? request.getName() : "User");
-        
+
         // Set optional fields
         if (request.getAge() != null) {
             newUser.setAge(request.getAge());
@@ -48,16 +49,16 @@ public class UserService {
         if (request.getSex() != null) {
             newUser.setSex(request.getSex());
         }
-        
+
         // Save the user
         User savedUser = userRepository.save(newUser);
-        
+
         // Create and return response
         CreateUserResponseDTO response = new CreateUserResponseDTO();
         response.setUserId(savedUser.getUserId());
         response.setName(savedUser.getName());
         response.setMessage("User created successfully");
-        
+
         return response;
     }
 
