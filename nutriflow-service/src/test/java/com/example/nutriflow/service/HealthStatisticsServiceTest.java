@@ -175,4 +175,77 @@ class HealthStatisticsServiceTest {
         assertEquals(new BigDecimal("18.50"), metrics.getBmi());
         assertEquals(BMICategory.NORMAL_WEIGHT, metrics.getBmiCategory());
     }
+
+    @Test
+    void testGetHealthStatistics_WeightIsNull() {
+        testUser.setWeight(null);
+        testUser.setHeight(new BigDecimal("175.0"));
+
+        when(userRepository.findUserById(1)).thenReturn(Optional.of(testUser));
+        when(healthHistoryRepository.findByUserIdOrderByRecordedAtDesc(1)).thenReturn(Collections.emptyList());
+
+        Optional<HealthStatisticsResponseDTO> result = healthStatisticsService.getHealthStatistics(1);
+        assertTrue(result.isPresent());
+        HealthStatisticsResponseDTO.CurrentHealthMetrics metrics = result.get().getCurrentMetrics();
+        
+        assertNull(metrics.getBmi());
+        assertEquals(BMICategory.UNKNOWN, metrics.getBmiCategory());
+        assertEquals("Unknown", metrics.getBmiCategoryDisplay());
+        assertNull(metrics.getWeight());
+        assertEquals(new BigDecimal("175.0"), metrics.getHeight());
+    }
+
+    @Test
+    void testGetHealthStatistics_HeightIsNull() {
+        testUser.setWeight(new BigDecimal("70.0"));
+        testUser.setHeight(null);
+
+        when(userRepository.findUserById(1)).thenReturn(Optional.of(testUser));
+        when(healthHistoryRepository.findByUserIdOrderByRecordedAtDesc(1)).thenReturn(Collections.emptyList());
+        Optional<HealthStatisticsResponseDTO> result = healthStatisticsService.getHealthStatistics(1);
+
+        assertTrue(result.isPresent());
+        HealthStatisticsResponseDTO.CurrentHealthMetrics metrics = result.get().getCurrentMetrics();
+        
+        assertNull(metrics.getBmi());
+        assertEquals(BMICategory.UNKNOWN, metrics.getBmiCategory());
+        assertEquals("Unknown", metrics.getBmiCategoryDisplay());
+        assertEquals(new BigDecimal("70.0"), metrics.getWeight());
+        assertNull(metrics.getHeight());
+    }
+
+    @Test
+    void testGetHealthStatistics_HeightIsZero() {
+        testUser.setWeight(new BigDecimal("70.0"));
+        testUser.setHeight(BigDecimal.ZERO);
+
+        when(userRepository.findUserById(1)).thenReturn(Optional.of(testUser));
+        when(healthHistoryRepository.findByUserIdOrderByRecordedAtDesc(1)).thenReturn(Collections.emptyList());
+
+        Optional<HealthStatisticsResponseDTO> result = healthStatisticsService.getHealthStatistics(1);
+        assertTrue(result.isPresent());
+        HealthStatisticsResponseDTO.CurrentHealthMetrics metrics = result.get().getCurrentMetrics();
+        
+        assertNull(metrics.getBmi());
+        assertEquals(BMICategory.UNKNOWN, metrics.getBmiCategory());
+        assertEquals("Unknown", metrics.getBmiCategoryDisplay());
+    }
+
+    @Test
+    void testGetHealthStatistics_BothWeightAndHeightNull() {
+        testUser.setWeight(null);
+        testUser.setHeight(null);
+
+        when(userRepository.findUserById(1)).thenReturn(Optional.of(testUser));
+        when(healthHistoryRepository.findByUserIdOrderByRecordedAtDesc(1)).thenReturn(Collections.emptyList());
+
+        Optional<HealthStatisticsResponseDTO> result = healthStatisticsService.getHealthStatistics(1);
+        assertTrue(result.isPresent());
+        HealthStatisticsResponseDTO.CurrentHealthMetrics metrics = result.get().getCurrentMetrics();
+        
+        assertNull(metrics.getBmi());
+        assertEquals(BMICategory.UNKNOWN, metrics.getBmiCategory());
+        assertNull(metrics.getWeight());
+        assertNull(metrics.getHeight());
+    }
 }
