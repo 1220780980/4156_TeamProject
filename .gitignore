@@ -29,3 +29,8 @@ nutriflow-service/target/
 fitness-client/backend/target/
 fitness-client/frontend/node_modules/
 fitness-client/frontend/package-lock.json
+
+iteration2任务.pdf
+
+.pids
+logs/
