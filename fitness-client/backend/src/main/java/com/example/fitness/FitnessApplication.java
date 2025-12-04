@@ -9,14 +9,21 @@ import org.springframework.web.client.RestTemplate;
  * Main application class for Fitness Client Backend.
  */
 @SpringBootApplication
-public class FitnessApplication {
+public final class FitnessApplication {
 
-    public static void main(String[] args) {
+    /**
+     * Main entry point for the Fitness application.
+     *
+     * @param args command line arguments
+     */
+    public static void main(final String[] args) {
         SpringApplication.run(FitnessApplication.class, args);
     }
 
     /**
      * Bean for making HTTP requests to external services.
+     *
+     * @return RestTemplate instance for HTTP requests
      */
     @Bean
     public RestTemplate restTemplate() {

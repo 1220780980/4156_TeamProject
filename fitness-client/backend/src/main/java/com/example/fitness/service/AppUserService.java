@@ -17,7 +17,10 @@ import org.springframework.transaction.annotation.Transactional;
  * Service class for handling app user operations.
  */
 @Service
-public class AppUserService {
+public final class AppUserService {
+
+    /** BCrypt cost factor for password hashing. */
+    private static final int BCRYPT_COST = 12;
 
     /**
      * Repository for app user data.
@@ -39,25 +42,32 @@ public class AppUserService {
      * @throws RuntimeException if email already exists or registration fails
      */
     @Transactional
-    public RegistrationResponse registerUser(RegistrationRequest request) {
+    public RegistrationResponse registerUser(
+            final RegistrationRequest request) {
         // Validate registration request
         if (request == null) {
-            throw new IllegalArgumentException("Registration request cannot be null");
+            throw new IllegalArgumentException(
+                    "Registration request cannot be null");
         }
-        if (request.getEmail() == null || request.getEmail().isEmpty()) {
-            throw new IllegalArgumentException("Email cannot be null or empty");
+        if (request.getEmail() == null
+                || request.getEmail().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Email cannot be null or empty");
         }
-        if (request.getPassword() == null || request.getPassword().isEmpty()) {
-            throw new IllegalArgumentException("Password cannot be null or empty");
+        if (request.getPassword() == null
+                || request.getPassword().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Password cannot be null or empty");
         }
-        
         if (appUserRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists: " + request.getEmail());
+            throw new RuntimeException(
+                    "Email already exists: " + request.getEmail());
         }
 
         // Hash the password using BCrypt
         String hashedPassword = BCrypt.withDefaults()
-            .hashToString(12, request.getPassword().toCharArray());
+            .hashToString(BCRYPT_COST,
+                    request.getPassword().toCharArray());
 
         // Create AppUser entity
         AppUser appUser = new AppUser();
@@ -88,8 +98,8 @@ public class AppUserService {
             savedAppUser = appUserRepository.save(savedAppUser);
 
         } catch (Exception e) {
-            // If NutriFlow creation fails, keep the local user but log error
-            System.err.println("Failed to create NutriFlow user: " 
+            // If NutriFlow creation fails, keep local user but log error
+            System.err.println("Failed to create NutriFlow user: "
                 + e.getMessage());
         }
 
@@ -117,17 +127,21 @@ public class AppUserService {
      * @return LoginResponse containing user information
      * @throws RuntimeException if authentication fails
      */
-    public LoginResponse loginUser(String email, String password) {
+    public LoginResponse loginUser(
+            final String email, final String password) {
         // Validate input parameters
         if (email == null || email.isEmpty()) {
-            throw new IllegalArgumentException("Email cannot be null or empty");
+            throw new IllegalArgumentException(
+                    "Email cannot be null or empty");
         }
         if (password == null || password.isEmpty()) {
-            throw new IllegalArgumentException("Password cannot be null or empty");
+            throw new IllegalArgumentException(
+                    "Password cannot be null or empty");
         }
 
         AppUser user = appUserRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+                .orElseThrow(() -> new RuntimeException(
+                        "Invalid email or password"));
 
         // Verify password using BCrypt
         BCrypt.Result result = BCrypt.verifyer()
@@ -159,7 +173,8 @@ public class AppUserService {
      * @param appUserId the app user ID
      * @return Optional containing UserProfileResponse if found
      */
-    public Optional<UserProfileResponse> getUserProfile(Long appUserId) {
+    public Optional<UserProfileResponse> getUserProfile(
+            final Long appUserId) {
         return appUserRepository.findById(appUserId)
                 .map(this::convertToProfileResponse);
     }
@@ -173,9 +188,8 @@ public class AppUserService {
      */
     @Transactional
     public Optional<UserProfileResponse> updateUserProfile(
-            Long appUserId, 
-            UpdateUserProfileRequest request) {
-        
+            final Long appUserId,
+            final UpdateUserProfileRequest request) {
         return appUserRepository.findById(appUserId)
                 .map(user -> {
                     // Update fields if they are provided (not null)
@@ -197,7 +211,7 @@ public class AppUserService {
                     if (request.getFitnessGoal() != null) {
                         user.setFitnessGoal(request.getFitnessGoal());
                     }
-                    
+
                     // Save and return
                     AppUser updatedUser = appUserRepository.save(user);
                     return convertToProfileResponse(updatedUser);
@@ -210,7 +224,8 @@ public class AppUserService {
      * @param user the AppUser entity
      * @return UserProfileResponse DTO
      */
-    private UserProfileResponse convertToProfileResponse(AppUser user) {
+    private UserProfileResponse convertToProfileResponse(
+            final AppUser user) {
         UserProfileResponse response = new UserProfileResponse();
         response.setAppUserId(user.getId());
         response.setEmail(user.getEmail());

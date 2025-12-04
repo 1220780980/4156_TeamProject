@@ -14,20 +14,43 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Service for generating meal plans for users.
+ */
 @Service
 public final class MealPlanService {
 
+    /** Default number of meals per day. */
+    private static final int DEFAULT_MEALS_PER_DAY = 3;
+    /** Number of days in a week. */
+    private static final int DAYS_IN_WEEK = 7;
+
+    /** Repository for accessing user data. */
     private final AppUserRepository userRepository;
+    /** Client for communicating with NutriFlow service. */
     private final NutriflowClient nutriflowClient;
 
+    /**
+     * Constructor for MealPlanService.
+     *
+     * @param appUserRepository the user repository
+     * @param nutriflowClientParam the NutriFlow client
+     */
     @Autowired
     public MealPlanService(
             final AppUserRepository appUserRepository,
-            final NutriflowClient nutriflowClient) {
+            final NutriflowClient nutriflowClientParam) {
         this.userRepository = appUserRepository;
-        this.nutriflowClient = nutriflowClient;
+        this.nutriflowClient = nutriflowClientParam;
     }
 
+    /**
+     * Build meal plan request with user preferences.
+     *
+     * @param appUserId the app user ID
+     * @param preferences the meal plan preferences
+     * @return the meal plan request DTO
+     */
     public MealPlanRequestDTO buildMealPlanRequest(
             final Long appUserId,
             final MealPlanRequestDTO preferences) {
@@ -39,6 +62,13 @@ public final class MealPlanService {
         return preferences;
     }
 
+    /**
+     * Generate a weekly meal plan for a user.
+     *
+     * @param appUserId the app user ID
+     * @param request the meal plan request
+     * @return the generated weekly meal plan
+     */
     public WeeklyMealPlan generateMealPlan(
             final Long appUserId,
             final MealPlanRequestDTO request) {
@@ -48,24 +78,28 @@ public final class MealPlanService {
 
         Long nutriflowUserId = user.getNutriflowUserId();
         if (nutriflowUserId == null) {
-            throw new RuntimeException("User does not have a NutriFlow account");
+            throw new RuntimeException(
+                    "User does not have a NutriFlow account");
         }
 
         Integer mealsPerDayObj = request.getMealsPerDay();
-        int mealsPerDay = mealsPerDayObj != null ? mealsPerDayObj : 3;
-        int numDays = 7;
+        int mealsPerDay = mealsPerDayObj != null
+                ? mealsPerDayObj : DEFAULT_MEALS_PER_DAY;
+        int numDays = DAYS_IN_WEEK;
 
         List<DailyMealPlan> dailyPlans = new ArrayList<>();
         LocalDate startDate = LocalDate.now();
-        String[] dayNames = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+        String[] dayNames = {"Monday", "Tuesday", "Wednesday",
+                "Thursday", "Friday", "Saturday", "Sunday"};
 
         for (int day = 0; day < numDays; day++) {
             DailyMealPlan dailyPlan = new DailyMealPlan();
-            dailyPlan.setDay(dayNames[day % 7]);
+            dailyPlan.setDay(dayNames[day % DAYS_IN_WEEK]);
 
             List<Meal> meals = new ArrayList<>();
             for (int mealNum = 0; mealNum < mealsPerDay; mealNum++) {
-                Map<String, Object> recipeData = nutriflowClient.getAIRecipeForUser(nutriflowUserId, appUserId);
+                Map<String, Object> recipeData = nutriflowClient
+                        .getAIRecipeForUser(nutriflowUserId, appUserId);
                 Meal meal = convertRecipeToMeal(recipeData);
                 meals.add(meal);
             }
@@ -81,7 +115,14 @@ public final class MealPlanService {
         return weeklyPlan;
     }
 
-    private Meal convertRecipeToMeal(Map<String, Object> recipeData) {
+    /**
+     * Convert recipe data from NutriFlow to a Meal object.
+     *
+     * @param recipeData the recipe data map
+     * @return the converted Meal object
+     */
+    private Meal convertRecipeToMeal(
+            final Map<String, Object> recipeData) {
         Meal meal = new Meal();
 
         if (recipeData.containsKey("title")) {
@@ -120,7 +161,13 @@ public final class MealPlanService {
         return meal;
     }
 
-    private int convertToInt(Object value) {
+    /**
+     * Convert a value to integer.
+     *
+     * @param value the value to convert
+     * @return the integer value, or 0 if conversion fails
+     */
+    private int convertToInt(final Object value) {
         if (value == null) {
             return 0;
         }

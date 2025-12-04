@@ -10,7 +10,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * Web MVC configuration for registering interceptors.
  */
 @Configuration
-public class WebMvcConfig implements WebMvcConfigurer {
+public final class WebMvcConfig implements WebMvcConfigurer {
 
     /** Interceptor for tracking client requests. */
     @Autowired
