@@ -25,6 +25,15 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class AppUser {
 
+    /** Precision for decimal fields. */
+    private static final int DECIMAL_PRECISION = 5;
+    /** Scale for decimal fields. */
+    private static final int DECIMAL_SCALE = 2;
+    /** Maximum length for sex field. */
+    private static final int SEX_LENGTH = 10;
+    /** Maximum length for activity level and fitness goal fields. */
+    private static final int ACTIVITY_GOAL_LENGTH = 20;
+
     /** Unique identifier for the app user. */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,23 +53,25 @@ public class AppUser {
     private Integer age;
 
     /** Height of the user. */
-    @Column(name = "height", precision = 5, scale = 2)
+    @Column(name = "height", precision = DECIMAL_PRECISION,
+            scale = DECIMAL_SCALE)
     private BigDecimal height;
 
     /** Weight of the user. */
-    @Column(name = "weight", precision = 5, scale = 2)
+    @Column(name = "weight", precision = DECIMAL_PRECISION,
+            scale = DECIMAL_SCALE)
     private BigDecimal weight;
 
     /** Biological sex of the user. */
-    @Column(name = "sex", length = 10)
+    @Column(name = "sex", length = SEX_LENGTH)
     private String sex;
 
     /** Activity level of the user. */
-    @Column(name = "activity_level", length = 20)
+    @Column(name = "activity_level", length = ACTIVITY_GOAL_LENGTH)
     private String activityLevel;
 
     /** Fitness goal of the user. */
-    @Column(name = "fitness_goal", length = 20)
+    @Column(name = "fitness_goal", length = ACTIVITY_GOAL_LENGTH)
     private String fitnessGoal;
 
     /** Associated Nutriflow user ID for integration. */

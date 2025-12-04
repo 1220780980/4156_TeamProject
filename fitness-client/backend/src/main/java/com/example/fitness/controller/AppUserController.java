@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/users")
 @CrossOrigin(origins = "http://localhost:3000")
-public class AppUserController {
+public final class AppUserController {
 
     /**
      * Service for app user operations.
@@ -41,9 +41,11 @@ public class AppUserController {
      * @return ResponseEntity containing registration response
      */
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegistrationRequest request) {
+    public ResponseEntity<?> register(
+            @RequestBody final RegistrationRequest request) {
         try {
-            RegistrationResponse response = appUserService.registerUser(request);
+            RegistrationResponse response =
+                    appUserService.registerUser(request);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             return ResponseEntity
@@ -59,10 +61,11 @@ public class AppUserController {
      * @return ResponseEntity containing login response with user info
      */
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(
+            @RequestBody final LoginRequest request) {
         try {
             LoginResponse response = appUserService.loginUser(
-                    request.getEmail(), 
+                    request.getEmail(),
                     request.getPassword()
             );
             return ResponseEntity.ok(response);
@@ -80,12 +83,13 @@ public class AppUserController {
      * @return ResponseEntity contain user profile if found, 404 if not found
      */
     @GetMapping("/{appUserId}")
-    public ResponseEntity<?> getUserProfile(@PathVariable Long appUserId) {
+    public ResponseEntity<?> getUserProfile(
+            @PathVariable final Long appUserId) {
         return appUserService.getUserProfile(appUserId)
                 .<ResponseEntity<?>>map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity
                         .status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("error", "User not found with ID: " 
+                        .body(Map.of("error", "User not found with ID: "
                             + appUserId)));
     }
 
@@ -94,19 +98,19 @@ public class AppUserController {
      *
      * @param appUserId the app user ID
      * @param request the update request containing fields to update
-     * @return ResponseEntity containing updated profile if successful, 
+     * @return ResponseEntity containing updated profile if successful,
      *         404 if not found
      */
     @PutMapping("/{appUserId}")
     public ResponseEntity<?> updateUserProfile(
-        @PathVariable Long appUserId,
-        @RequestBody UpdateUserProfileRequest request) {
-    
+        @PathVariable final Long appUserId,
+        @RequestBody final UpdateUserProfileRequest request) {
+
     return appUserService.updateUserProfile(appUserId, request)
             .<ResponseEntity<?>>map(ResponseEntity::ok)
             .orElseGet(() -> ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "User not found with ID: " 
+                    .body(Map.of("error", "User not found with ID: "
                         + appUserId)));
 }
 }
