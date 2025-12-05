@@ -34,8 +34,8 @@ public final class MealPlanService {
     /**
      * Constructor for MealPlanService.
      *
-     * @param appUserRepository    the user repository
-     * @param nutriflowClientParam the NutriFlow client
+     * @param userRepository    the user repository
+     * @param nutriflowClient the NutriFlow client
      */
     @Autowired
     public MealPlanService(AppUserRepository userRepository, NutriflowClient nutriflowClient) {
@@ -127,14 +127,17 @@ public final class MealPlanService {
     /**
      * Convert a value to integer.
      *
-     * @param value the value to convert
+     * @param v the value to convert
      * @return the integer value, or 0 if conversion fails
      */
     private int convertToInt(Object v) {
-        if (v == null)
+        if (v == null) {
             return 0;
-        if (v instanceof Number)
+        }
+        if (v instanceof Number) {
             return ((Number) v).intValue();
+        }
+        
         try {
             return Integer.parseInt(v.toString());
         } catch (Exception e) {
