@@ -142,4 +142,26 @@ public final class NutriflowClient {
         headers.set("X-End-User-Id", String.valueOf(appUserId));
         return headers;
     }
+
+    public Map<String, Object> searchRecipeByIngredient(String ingredient) {
+        String url = nutriflowBaseUrl + "/ai/recipes/ingredient/" + ingredient;
+
+        HttpHeaders headers = createHeaders(null); // User not required for this call
+        HttpEntity<Void> request = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    request,
+                    new ParameterizedTypeReference<Map<String, Object>>() {
+                    });
+
+            return response.getBody();
+        } catch (Exception e) {
+            throw new RuntimeException(
+                    "Failed to search recipe by ingredient: " + e.getMessage(),
+                    e);
+        }
+    }
 }

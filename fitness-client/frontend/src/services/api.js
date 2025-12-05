@@ -86,7 +86,7 @@ export const searchRecipeByIngredient = async (ingredient) => {
     // For now, this will fail gracefully with a helpful error message
     // Expected endpoint: GET /api/recipes/ingredient/{ingredient}
     // This should call NutriFlow's /api/ai/recipes/ingredient/{ingredient}
-    const response = await apiClient.get(`/recipes/ingredient/${encodeURIComponent(ingredient)}`);
+    const response = await apiClient.get(`/proxy/recipes/ingredient/${encodeURIComponent(ingredient)}`);
     return response.data;
   } catch (error) {
     if (error.response) {
@@ -98,3 +98,17 @@ export const searchRecipeByIngredient = async (ingredient) => {
     }
   }
 };
+
+export async function generateMealPlan(appUserId, requestData) {
+  const response = await fetch(`http://localhost:8081/api/mealplans/request/${appUserId}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(requestData)
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to generate meal plan");
+  }
+
+  return await response.json();
+}
