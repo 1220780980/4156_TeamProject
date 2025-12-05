@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
  * Service class for handling app user operations.
  */
 @Service
-public final class AppUserService {
+public class AppUserService {
 
     /** BCrypt cost factor for password hashing. */
     private static final int BCRYPT_COST = 12;

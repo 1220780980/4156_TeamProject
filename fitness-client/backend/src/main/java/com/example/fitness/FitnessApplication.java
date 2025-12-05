@@ -9,7 +9,7 @@ import org.springframework.web.client.RestTemplate;
  * Main application class for Fitness Client Backend.
  */
 @SpringBootApplication
-public final class FitnessApplication {
+public class FitnessApplication {
 
     /**
      * Main entry point for the Fitness application.
