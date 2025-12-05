@@ -16,6 +16,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Autowired
     private ClientTrackingInterceptor clientTrackingInterceptor;
 
+    /**
+     * Registers interceptors for tracking client requests.
+     * @param registry the interceptor registry
+     */
     @Override
     public void addInterceptors(final InterceptorRegistry registry) {
         registry.addInterceptor(clientTrackingInterceptor)
