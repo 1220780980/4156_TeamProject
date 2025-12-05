@@ -150,7 +150,8 @@ Purpose: Allow users to look for recipes with a specific ingredient and get AI-r
     - and a few minor helper functions.
 - Controller: AIRecipeController 
     - `GET /api/ai/recipes/ingredient/{ingredient}` - retrieves a recipe with the given ingredient (pulls from the repository if a recipe with the given ingredient exists, otherwise asks an LLM to generate a recipe).
-    - `GET /api/ai/recipes/recommendation` - returns a recipe recommended by an LLM. 
+    - `GET /api/ai/recipes/recommendation` - returns a recipe recommended by an LLM.
+    - `GET /api/ai/recipes/user/{userId}` - returns a recipe based on user information (such as dislikes, allergies, equipment, cooking skill, budget and pantry items available).
 
 ### Substitution Management
 
@@ -189,11 +190,16 @@ Tables:
 mvn clean verify
 open target/site/jacoco/index.html
 ```
-coverage: 60% for iteration 1
+coverage: 85% for iteration 1
 ![alt text](coverage_iteration_1.png)
 
 ## Checkstyle
 ```
 mvn checkstyle:check
 ```
-![alt text](<style_check_iteration_1.png>)
+![alt text](<checkstyle.png>)
+
+## Static Code Analyzer
+```
+mvn compile pmd:pmd
+```
