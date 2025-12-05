@@ -1,7 +1,9 @@
 package com.example.nutriflow.service;
 
+import com.example.nutriflow.model.PantryItem;
 import com.example.nutriflow.model.Recipe;
 import com.example.nutriflow.model.RecipeIngredient;
+import com.example.nutriflow.model.User;
 import com.example.nutriflow.service.repository.RecipeIngredientRepository;
 import com.example.nutriflow.service.repository.RecipeRepository;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -9,12 +11,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
+import org.mockito.ArgumentCaptor;
+import com.google.genai.Client;
+import com.google.genai.Models;
+import com.google.genai.types.GenerateContentConfig;
+import com.google.genai.types.GenerateContentResponse;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -24,17 +31,29 @@ class AIRecipeServiceTest {
     private RecipeRepository recipeRepository;
     private RecipeIngredientRepository recipeIngredientRepository;
     private AIRecipeService aiRecipeService;
+    private UserService userService;
+    private PantryService pantryService;
+    private Client client;
+    private Models models;
     private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() throws Exception {
         recipeRepository = mock(RecipeRepository.class);
         recipeIngredientRepository = mock(RecipeIngredientRepository.class);
+        userService = mock(UserService.class);
+        pantryService = mock(PantryService.class);
         objectMapper = new ObjectMapper();
         aiRecipeService = new AIRecipeService("test-api-key", "test-model", objectMapper);
-
+        client = mock(Client.class);
+        models = mock(Models.class);
+        
         injectDependency("recipeRepository", recipeRepository);
         injectDependency("recipeIngredientRepository", recipeIngredientRepository);
+        injectDependency("userService", userService);
+        injectDependency("pantryService", pantryService);
+        injectDependency("client", client);
+        setField(client, "models", models);
     }
 
     @Test
@@ -57,6 +76,44 @@ class AIRecipeServiceTest {
         verify(recipeRepository).findAll();
         verify(recipeIngredientRepository).findByRecipeId(8);
         verifyNoMoreInteractions(recipeRepository, recipeIngredientRepository);
+    }
+
+    @Test
+    @DisplayName("Get AI recipe returns an existing recipe when ingredient matches")
+    void getUserRecipe() {
+        Recipe storedRecipe = new Recipe();
+        storedRecipe.setRecipeId(8);
+        storedRecipe.setTitle("Avocado Toast");
+
+        User myUser = new User();
+        myUser.setName("Jane Doe");
+        myUser.setUserId(7);
+        myUser.setAge(28);
+        myUser.setBudget(new BigDecimal("10.00"));
+        myUser.setAllergies(new String[]{"peanuts"});
+        myUser.setDislikes(new String[]{"broccoli"});
+        myUser.setEquipments(new String[]{"oven"});
+
+        PantryItem pantryItem = new PantryItem();
+        pantryItem.setName("Milk");
+        pantryItem.setQuantity(new BigDecimal("1"));
+        pantryItem.setUnit("Ounce");
+
+        when(userService.getUserById(7)).thenReturn(Optional.of(myUser));
+        when(pantryService.getPantryItems(7)).thenReturn(List.of(pantryItem));
+
+        GenerateContentResponse response = mock(GenerateContentResponse.class);
+        when(response.text()).thenReturn("{\"title\":\"Profile Meal\",\"ingredients\":[]}");
+        ArgumentCaptor<String> promptCaptor = ArgumentCaptor.forClass(String.class);
+        when(models.generateContent(eq("test-model"), promptCaptor.capture(), any(GenerateContentConfig.class)))
+          .thenReturn(response);
+
+        Recipe result = aiRecipeService.getUserRecipe(7);
+
+        assertEquals("Profile Meal", result.getTitle());
+        String prompt = promptCaptor.getValue();
+        assertTrue(prompt.contains("peanuts"));
+        assertTrue(prompt.contains("broccoli"));
     }
 
     @Test
@@ -126,10 +183,20 @@ class AIRecipeServiceTest {
         assertEquals("Failed to parse recipe response", cause.getMessage());
     }
 
-    private void injectDependency(final String fieldName, final Object value) throws Exception {
-        Field field = AIRecipeService.class.getDeclaredField(fieldName);
-        field.setAccessible(true);
-        field.set(aiRecipeService, value);
+    // private void injectDependency(final String fieldName, final Object value) throws Exception {
+    //     Field field = AIRecipeService.class.getDeclaredField(fieldName);
+    //     field.setAccessible(true);
+    //     field.set(aiRecipeService, value);
+    // }
+
+    private void injectDependency(final String fieldName, final Object value) throws Exception { 
+      setField(aiRecipeService, fieldName, value);
+    }
+
+    private void setField(final Object target, final String fieldName, final Object value) throws Exception {
+      Field field = target.getClass().getDeclaredField(fieldName);
+      field.setAccessible(true);
+      field.set(target, value);
     }
 
     private Recipe invokeParseRecipe(final String json) throws Exception {

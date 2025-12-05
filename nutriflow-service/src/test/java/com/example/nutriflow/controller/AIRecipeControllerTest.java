@@ -79,4 +79,31 @@ class AIRecipeControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value(containsString("Model timeout")));
     }
+
+    @Test
+    @DisplayName("GET endpoint to generate a recipe given the user's information.")
+    void getUserAIRecipe_ok() throws Exception {
+        Recipe recipe = new Recipe();
+        recipe.setRecipeId(12);
+        recipe.setTitle("Jane Doe Special");
+
+        Mockito.when(aiRecipeService.getUserRecipe(7))
+                .thenReturn(recipe);
+
+        mockMvc.perform(get("/api/ai/recipes/user/7"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.recipeId").value(12))
+                .andExpect(jsonPath("$.title").value("Jane Doe Special"));
+    }
+
+    @Test
+    @DisplayName("GET endpoint to generate a recipe given the user's information - error.")
+    void getUserAIRecipe_error() throws Exception {
+        Mockito.when(aiRecipeService.getUserRecipe(7))
+                .thenThrow(new IllegalStateException("Model timeout"));
+
+        mockMvc.perform(get("/api/ai/recipes/user/7"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value(containsString("Model timeout")));
+    }
 }
