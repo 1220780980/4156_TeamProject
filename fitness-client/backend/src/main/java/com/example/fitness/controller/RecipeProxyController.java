@@ -1,11 +1,16 @@
 package com.example.fitness.controller;
 
 import com.example.fitness.service.NutriflowClient;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/proxy/recipes")
@@ -15,6 +20,7 @@ import java.util.Map;
 
 public class RecipeProxyController {
 
+    /** Client for communicating with NutriFlow service. */
     @Autowired
     private NutriflowClient nutriflowClient;
 
