@@ -192,7 +192,7 @@ mvn clean verify
 open target/site/jacoco/index.html
 ```
 coverage: 85% for iteration 2
-![alt text](coverage_iteration_1.png)
+![alt text](Coverage_final.png)
 
 ## Checkstyle
 ```
