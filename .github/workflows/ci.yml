@@ -25,3 +25,5 @@ jobs:
           java-version: '17'
       - name: Maven Verify
         run: mvn -B clean verify -Dspring.profiles.active=local
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
