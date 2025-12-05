@@ -6,6 +6,7 @@ import com.example.nutriflow.model.RecipeIngredient;
 import com.example.nutriflow.model.User;
 import com.example.nutriflow.service.repository.RecipeIngredientRepository;
 import com.example.nutriflow.service.repository.RecipeRepository;
+import com.example.nutriflow.model.enums.CookingSkillLevel;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,7 +48,7 @@ class AIRecipeServiceTest {
         aiRecipeService = new AIRecipeService("test-api-key", "test-model", objectMapper);
         client = mock(Client.class);
         models = mock(Models.class);
-        
+
         injectDependency("recipeRepository", recipeRepository);
         injectDependency("recipeIngredientRepository", recipeIngredientRepository);
         injectDependency("userService", userService);
@@ -76,6 +77,36 @@ class AIRecipeServiceTest {
         verify(recipeRepository).findAll();
         verify(recipeIngredientRepository).findByRecipeId(8);
         verifyNoMoreInteractions(recipeRepository, recipeIngredientRepository);
+    }
+
+    @Test
+    @DisplayName("Get AI recipe generates a new recipe when no existing match is found")
+    void getAIRecipe_generatesRecipeWhenNoMatch() {
+        Recipe storedRecipe = new Recipe();
+        storedRecipe.setRecipeId(5);
+        storedRecipe.setTitle("Different Dish");
+
+        RecipeIngredient ingredient = new RecipeIngredient();
+        ingredient.setRecipeId(5);
+        ingredient.setIngredient(null);
+
+        when(recipeRepository.findAll()).thenReturn(List.of(storedRecipe));
+        when(recipeIngredientRepository.findByRecipeId(5)).thenReturn(List.of(ingredient));
+
+        GenerateContentResponse response = mock(GenerateContentResponse.class);
+        when(response.text()).thenReturn("{\"title\":\"AI Avocado\",\"ingredients\":[]}");
+        ArgumentCaptor<String> promptCaptor = ArgumentCaptor.forClass(String.class);
+        when(models.generateContent(eq("test-model"), promptCaptor.capture(), any(GenerateContentConfig.class)))
+            .thenReturn(response);
+
+        Recipe result = aiRecipeService.getAIRecipe("Avocado");
+
+        assertEquals("AI Avocado", result.getTitle());
+        assertEquals("Generate a delicious recipe with the following ingredient: Avocado",
+            promptCaptor.getValue());
+        verify(recipeRepository).findAll();
+        verify(recipeIngredientRepository).findByRecipeId(5);
+        verify(models).generateContent(eq("test-model"), anyString(), any(GenerateContentConfig.class));
     }
 
     @Test
@@ -114,6 +145,101 @@ class AIRecipeServiceTest {
         String prompt = promptCaptor.getValue();
         assertTrue(prompt.contains("peanuts"));
         assertTrue(prompt.contains("broccoli"));
+        assertTrue(prompt.contains("$10.00"));
+        assertTrue(prompt.contains("Milk (1 Ounce)"));
+        verify(userService).getUserById(7);
+        verify(pantryService).getPantryItems(7);
+        verify(models).generateContent(eq("test-model"), anyString(), any(GenerateContentConfig.class));
+    }
+
+    @Test
+    @DisplayName("getUserRecipe throws when the user is missing")
+    void getUserRecipe_throwsWhenUserMissing() {
+        when(userService.getUserById(404)).thenReturn(Optional.empty());
+
+        IllegalArgumentException ex = assertThrows(
+            IllegalArgumentException.class,
+            () -> aiRecipeService.getUserRecipe(404)
+        );
+
+        assertEquals("User not found: 404", ex.getMessage());
+        verify(userService).getUserById(404);
+        verifyNoInteractions(pantryService, models);
+    }
+
+    @Test
+    @DisplayName("Get user recipe uses defaults when optional user data is missing")
+    void getUserRecipe_usesDefaultsWhenOptionalDataMissing() {
+        User minimalUser = new User();
+        minimalUser.setUserId(9);
+        minimalUser.setName("Anon");
+
+        when(userService.getUserById(9)).thenReturn(Optional.of(minimalUser));
+        when(pantryService.getPantryItems(9)).thenReturn(List.of());
+
+        GenerateContentResponse response = mock(GenerateContentResponse.class);
+        when(response.text()).thenReturn("{\"title\":\"Fallback Meal\",\"ingredients\":[]}");
+        ArgumentCaptor<String> promptCaptor = ArgumentCaptor.forClass(String.class);
+        when(models.generateContent(eq("test-model"), promptCaptor.capture(), any(GenerateContentConfig.class)))
+            .thenReturn(response);
+
+        Recipe recipe = aiRecipeService.getUserRecipe(9);
+
+        assertEquals("Fallback Meal", recipe.getTitle());
+        String prompt = promptCaptor.getValue();
+        assertTrue(prompt.contains("unspecified budget"));
+        assertTrue(prompt.contains("unspecified cooking skill"));
+        assertTrue(prompt.contains("[]"));
+        assertTrue(prompt.contains("no pantry items"));
+        verify(pantryService).getPantryItems(9);
+    }
+
+    @Test
+    @DisplayName("Get AI recommended recipe calls LLM with generic prompt")
+    void getAIRecommendedRecipe_callsLLM() {
+        GenerateContentResponse response = mock(GenerateContentResponse.class);
+        when(response.text()).thenReturn("{\"title\":\"Chef's Surprise\",\"ingredients\":[]}");
+        ArgumentCaptor<String> promptCaptor = ArgumentCaptor.forClass(String.class);
+        when(models.generateContent(eq("test-model"), promptCaptor.capture(), any(GenerateContentConfig.class)))
+            .thenReturn(response);
+
+        Recipe recipe = aiRecipeService.getAIRecommendedRecipe();
+
+        assertEquals("Chef's Surprise", recipe.getTitle());
+        assertEquals("Generate a delicious recipe", promptCaptor.getValue());
+        verify(models).generateContent(eq("test-model"), anyString(), any(GenerateContentConfig.class));
+    }
+
+    @Test
+    @DisplayName("getUserRecipe includes cooking skill and pantry items without quantities")
+    void getUserRecipe_formatsPantryWithoutQuantityOrUnit() {
+        User user = new User();
+        user.setUserId(3);
+        user.setName("Sam");
+        user.setCookingSkillLevel(CookingSkillLevel.INTERMEDIATE);
+
+        PantryItem pantryItem = new PantryItem();
+        pantryItem.setName("Salt"); // no quantity/unit on purpose
+
+        when(userService.getUserById(3)).thenReturn(Optional.of(user));
+        when(pantryService.getPantryItems(3)).thenReturn(List.of(pantryItem));
+
+        GenerateContentResponse response = mock(GenerateContentResponse.class);
+        when(response.text()).thenReturn("{\"title\":\"Skill Meal\",\"ingredients\":[]}");
+        ArgumentCaptor<String> promptCaptor = ArgumentCaptor.forClass(String.class);
+        when(models.generateContent(eq("test-model"), promptCaptor.capture(), any(GenerateContentConfig.class)))
+            .thenReturn(response);
+
+        Recipe recipe = aiRecipeService.getUserRecipe(3);
+
+        assertEquals("Skill Meal", recipe.getTitle());
+        String prompt = promptCaptor.getValue();
+        assertTrue(prompt.contains("INTERMEDIATE")); 
+        assertTrue(prompt.contains("Salt"));         
+        assertFalse(prompt.contains("Salt ("));      
+        verify(userService).getUserById(3);
+        verify(pantryService).getPantryItems(3);
+        verify(models).generateContent(eq("test-model"), anyString(), any(GenerateContentConfig.class));
     }
 
     @Test
@@ -183,11 +309,34 @@ class AIRecipeServiceTest {
         assertEquals("Failed to parse recipe response", cause.getMessage());
     }
 
-    // private void injectDependency(final String fieldName, final Object value) throws Exception {
-    //     Field field = AIRecipeService.class.getDeclaredField(fieldName);
-    //     field.setAccessible(true);
-    //     field.set(aiRecipeService, value);
-    // }
+    @Test
+    @DisplayName("parseRecipe handles missing optional fields and non-numeric values")
+    void parseRecipe_handlesMissingOptionalFields() throws Exception {
+        String json = """
+                {
+                  "title": "Sparse Dish",
+                  "ingredients": null,
+                  "cuisines": "fusion",
+                  "calories": "heavy"
+                }
+                """;
+
+        Recipe result = invokeParseRecipe(json);
+
+        assertEquals("Sparse Dish", result.getTitle());
+        assertNull(result.getCookTime());
+        assertNull(result.getCuisines());
+        assertNull(result.getTags());
+        assertEquals("{}", result.getIngredients());
+        assertNull(result.getInstructions());
+        assertNull(result.getNutrition());
+        assertNull(result.getCalories());
+        assertNull(result.getCarbohydrates());
+        assertNull(result.getFat());
+        assertNull(result.getFiber());
+        assertNull(result.getProtein());
+        assertNull(result.getPopularityScore());
+    }
 
     private void injectDependency(final String fieldName, final Object value) throws Exception { 
       setField(aiRecipeService, fieldName, value);
