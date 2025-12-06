@@ -61,9 +61,10 @@ public class AIRecipeService {
      * @param myObjectMapper an objectmapper object
      */
     public AIRecipeService(
-        final @Value("${GOOGLE_API_KEY}") String apiKey,
-        final @Value("${GOOGLE_MODEL_NAME}") String modelName,
-        final ObjectMapper myObjectMapper) {
+            final @Value("${google.api.key}") String apiKey,
+            final @Value("${google.model.name}") String modelName,
+            final ObjectMapper myObjectMapper) {
+
         this.client = Client.builder().apiKey(apiKey).build();
         this.model = modelName;
         this.objectMapper = myObjectMapper;
@@ -306,4 +307,21 @@ public class AIRecipeService {
                 : null;
     }
 
+    public Map<String, Object> generateRecipeForUser(Long userId) {
+        Recipe recipe = getUserRecipe(userId.intValue());
+
+        return Map.of(
+                "title", recipe.getTitle(),
+                "cookTime", recipe.getCookTime(),
+                "calories", safeNum(recipe.getCalories()),
+                "protein", safeNum(recipe.getProtein()),
+                "carbohydrates", safeNum(recipe.getCarbohydrates()),
+                "fat", safeNum(recipe.getFat()),
+                "instructions",
+                recipe.getInstructions() != null ? recipe.getInstructions() : "No instructions available");
+    }
+
+    private int safeNum(BigDecimal val) {
+        return val != null ? val.intValue() : 0;
+    }
 }

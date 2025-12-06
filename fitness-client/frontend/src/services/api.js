@@ -6,9 +6,7 @@ const API_BASE_URL = 'http://localhost:8081/api';
 // Create axios instance with default config
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json'
-  }
+  headers: { 'Content-Type': 'application/json' }
 });
 
 /**
@@ -17,19 +15,8 @@ const apiClient = axios.create({
  * @returns {Promise} Response data from the server
  */
 export const registerUser = async (userData) => {
-  try {
-    const response = await apiClient.post('/users/register', userData);
-    return response.data;
-  } catch (error) {
-    if (error.response) {
-      throw new Error(error.response.data.error || 'Registration failed');
-    } else if (error.request) {
-      // Request made but no response
-      throw new Error('Cannot connect to server. Please check if the backend is running.');
-    } else {
-      throw new Error('An unexpected error occurred');
-    }
-  }
+  const response = await apiClient.post('/users/register', userData);
+  return response.data;
 };
 
 /**
@@ -38,19 +25,8 @@ export const registerUser = async (userData) => {
  * @returns {Promise} Response data from the server
  */
 export const loginUser = async (credentials) => {
-  try {
-    const response = await apiClient.post('/users/login', credentials);
-    return response.data;
-  } catch (error) {
-    if (error.response) {
-      throw new Error(error.response.data.error || 'Login failed');
-    } else if (error.request) {
-      // Request made but no response
-      throw new Error('Cannot connect to server. Please check if the backend is running.');
-    } else {
-      throw new Error('An unexpected error occurred');
-    }
-  }
+  const response = await apiClient.post('/users/login', credentials);
+  return response.data;
 };
 
 /**
@@ -60,18 +36,8 @@ export const loginUser = async (credentials) => {
  * @returns {Promise} Response data from the server
  */
 export const requestMealPlan = async (appUserId, preferences) => {
-  try {
-    const response = await apiClient.post(`/mealplans/request/${appUserId}`, preferences);
-    return response.data;
-  } catch (error) {
-    if (error.response) {
-      throw new Error(error.response.data.error || 'Failed to request meal plan');
-    } else if (error.request) {
-      throw new Error('Cannot connect to server. Please check if the backend is running.');
-    } else {
-      throw new Error('An unexpected error occurred');
-    }
-  }
+  const response = await apiClient.post(`/mealplans/request/${appUserId}`, preferences);
+  return response.data;
 };
 
 /**
@@ -81,34 +47,23 @@ export const requestMealPlan = async (appUserId, preferences) => {
  * @returns {Promise} Recipe data from NutriFlow
  */
 export const searchRecipeByIngredient = async (ingredient) => {
-  try {
-    // TODO: Backend needs to implement this endpoint to proxy to NutriFlow
-    // For now, this will fail gracefully with a helpful error message
-    // Expected endpoint: GET /api/recipes/ingredient/{ingredient}
-    // This should call NutriFlow's /api/ai/recipes/ingredient/{ingredient}
-    const response = await apiClient.get(`/proxy/recipes/ingredient/${encodeURIComponent(ingredient)}`);
-    return response.data;
-  } catch (error) {
-    if (error.response) {
-      throw new Error(error.response.data.error || 'Failed to search recipe');
-    } else if (error.request) {
-      throw new Error('Ingredient search endpoint not yet implemented. Please implement a backend endpoint that proxies to NutriFlow API.');
-    } else {
-      throw new Error('An unexpected error occurred');
-    }
-  }
+  const response = await apiClient.get(
+    `/proxy/recipes/ingredient/${encodeURIComponent(ingredient)}`
+  );
+  return response.data;
 };
 
-export async function generateMealPlan(appUserId, requestData) {
-  const response = await fetch(`http://localhost:8081/api/mealplans/request/${appUserId}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(requestData)
-  });
 
-  if (!response.ok) {
-    throw new Error("Failed to generate meal plan");
-  }
-
-  return await response.json();
-}
+export const generateMealPlan = async (appUserId, prefs) => {
+  const response = await apiClient.post(
+    `/mealplans/generate/${appUserId}`,
+    {
+      mealsPerDay: prefs.mealsPerDay,
+      maxPrepTime: prefs.maxPrepTime,
+      allergies: prefs.allergies,
+      dislikedMeals: prefs.dislikedMeals,
+      preferredIngredients: prefs.preferredIngredients
+    }
+  );
+  return response.data;
+};

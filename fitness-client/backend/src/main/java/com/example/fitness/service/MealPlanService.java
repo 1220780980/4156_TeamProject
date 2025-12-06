@@ -6,6 +6,7 @@ import com.example.fitness.model.DailyMealPlan;
 import com.example.fitness.model.WeeklyMealPlan;
 import com.example.fitness.model.dto.MealPlanRequestDTO;
 import com.example.fitness.repository.AppUserRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,8 +23,9 @@ public final class MealPlanService {
 
     /** Default number of meals per day. */
     private static final int DEFAULT_MEALS_PER_DAY = 3;
-    /** Number of days in a week. */
-    private static final int DAYS_IN_WEEK = 7;
+
+    /** Number of days in a plan. */
+    private static final int DAYS_IN_PLAN = 1;
 
     /** Repository for accessing user data. */
     private final AppUserRepository userRepository;
@@ -34,11 +36,12 @@ public final class MealPlanService {
     /**
      * Constructor for MealPlanService.
      *
-     * @param userRepository    the user repository
+     * @param userRepository  the user repository
      * @param nutriflowClient the NutriFlow client
      */
     @Autowired
-    public MealPlanService(AppUserRepository userRepository, NutriflowClient nutriflowClient) {
+    public MealPlanService(AppUserRepository userRepository,
+            NutriflowClient nutriflowClient) {
         this.userRepository = userRepository;
         this.nutriflowClient = nutriflowClient;
     }
@@ -50,7 +53,10 @@ public final class MealPlanService {
      * @param preferences the meal plan preferences
      * @return the meal plan request DTO
      */
-    public MealPlanRequestDTO buildMealPlanRequest(Long appUserId, MealPlanRequestDTO preferences) {
+    public MealPlanRequestDTO buildMealPlanRequest(
+            Long appUserId,
+            MealPlanRequestDTO preferences) {
+
         AppUser user = userRepository.findById(appUserId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -59,49 +65,64 @@ public final class MealPlanService {
     }
 
     /**
-     * Generate a weekly meal plan for a user.
+     * Generate a one day meal plan for a user.
      *
      * @param appUserId the app user ID
      * @param request   the meal plan request
-     * @return the generated weekly meal plan
+     * @return the generated one day meal plan
      */
-    public WeeklyMealPlan generateMealPlan(Long appUserId, MealPlanRequestDTO request) {
+    public WeeklyMealPlan generateMealPlan(
+            Long appUserId,
+            MealPlanRequestDTO request) {
 
         AppUser user = userRepository.findById(appUserId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         Long nutriflowUserId = user.getNutriflowUserId();
-        if (nutriflowUserId == null) {
-            throw new RuntimeException("User does not have a NutriFlow account");
+
+        // Create NutriFlow user if missing
+        if (nutriflowUserId == null ||
+                !nutriflowClient.nutriflowUserExists(nutriflowUserId)) {
+
+            nutriflowUserId = nutriflowClient.createNutriflowUser(
+                    appUserId,
+                    user.getEmail(),
+                    user.getHeight(),
+                    user.getWeight(),
+                    user.getAge(),
+                    user.getSex());
+
+            user.setNutriflowUserId(nutriflowUserId);
+            userRepository.save(user);
         }
 
         int mealsPerDay = request.getMealsPerDay() > 0
                 ? request.getMealsPerDay()
                 : DEFAULT_MEALS_PER_DAY;
 
-        List<DailyMealPlan> week = new ArrayList<>();
-        String[] dayNames = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
+        // Construct a WeeklyMealPlan container (even though it's one day)
+        WeeklyMealPlan weekly = new WeeklyMealPlan();
+        weekly.setStartDate(LocalDate.now());
 
-        for (int d = 0; d < DAYS_IN_WEEK; d++) {
+        List<DailyMealPlan> days = new ArrayList<>();
 
-            DailyMealPlan day = new DailyMealPlan();
-            day.setDay(dayNames[d]);
+        DailyMealPlan dayPlan = new DailyMealPlan();
+        dayPlan.setDay(LocalDate.now().getDayOfWeek().name());
 
-            List<Meal> meals = new ArrayList<>();
+        List<Meal> meals = new ArrayList<>();
 
-            for (int m = 0; m < mealsPerDay; m++) {
-                Map<String, Object> recipe = nutriflowClient.getAIRecipeForUser(nutriflowUserId, appUserId);
-                meals.add(convertRecipeToMeal(recipe));
-            }
+        for (int m = 0; m < mealsPerDay; m++) {
+            Map<String, Object> recipeData = nutriflowClient.getAIRecipeForUser(nutriflowUserId, appUserId);
 
-            day.setMeals(meals);
-            week.add(day);
+            meals.add(convertRecipeToMeal(recipeData));
         }
 
-        WeeklyMealPlan plan = new WeeklyMealPlan();
-        plan.setStartDate(LocalDate.now());
-        plan.setDays(week);
-        return plan;
+        dayPlan.setMeals(meals);
+        days.add(dayPlan);
+
+        weekly.setDays(days);
+
+        return weekly;
     }
 
     /**
@@ -130,16 +151,16 @@ public final class MealPlanService {
      * @param v the value to convert
      * @return the integer value, or 0 if conversion fails
      */
-    private int convertToInt(Object v) {
-        if (v == null) {
+    private int convertToInt(Object value) {
+        if (value == null)
             return 0;
+
+        if (value instanceof Number) {
+            return ((Number) value).intValue();
         }
-        if (v instanceof Number) {
-            return ((Number) v).intValue();
-        }
-        
+
         try {
-            return Integer.parseInt(v.toString());
+            return Integer.parseInt(value.toString());
         } catch (Exception e) {
             return 0;
         }
