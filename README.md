@@ -145,12 +145,14 @@ Purpose: Allow users to look for recipes with a specific ingredient and get AI-r
     - `getAIRecipe(String ingredient)` - returns a recipe with the given ingredient.  
     - `searchIngredient(String ingredient)` - searches the repository to see whether a recipe with the given ingredient exists.
     - `getAIRecommendedRecipe()` - returns an AI recommended recipe. 
-    - `requestRecipe(String prompt)` - sets up a structured output schema and makes an LLM query with the given prompt. 
+    - `requestRecipe(String prompt)` - sets up a structured output schema and makes an LLM query with the given prompt.
+    - `getUserRecipe(Integer userId)` - returns an AI recommended recipe based on the user's information. 
     - `parseRecipe(String json)` - parses the given json object and creates a Recipe object. 
     - and a few minor helper functions.
 - Controller: AIRecipeController 
     - `GET /api/ai/recipes/ingredient/{ingredient}` - retrieves a recipe with the given ingredient (pulls from the repository if a recipe with the given ingredient exists, otherwise asks an LLM to generate a recipe).
-    - `GET /api/ai/recipes/recommendation` - returns a recipe recommended by an LLM. 
+    - `GET /api/ai/recipes/recommendation` - returns a recipe recommended by an LLM.
+    - `GET /api/ai/recipes/user/{userId}` - returns a recipe based on user information (such as dislikes, allergies, equipment, cooking skill, budget and pantry items available).
 
 ### Substitution Management
 
@@ -189,11 +191,16 @@ Tables:
 mvn clean verify
 open target/site/jacoco/index.html
 ```
-coverage: 60% for iteration 1
-![alt text](coverage_iteration_1.png)
+coverage: 85% for iteration 2
+![alt text](Coverage_final.png)
 
 ## Checkstyle
 ```
 mvn checkstyle:check
 ```
-![alt text](<style_check_iteration_1.png>)
+![alt text](<checkstyle.png>)
+
+## Static Code Analyzer
+```
+mvn compile pmd:pmd
+```
