@@ -11,7 +11,11 @@ function MealPlanView({ appUserId, user }) {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState('');
 
-  const resolvedUserId = user?.appUserId || user?.id || appUserId;
+  const resolvedUserId = user?.appUserId ?? appUserId;
+
+  if (!resolvedUserId) {
+    console.error("No valid user ID available in MealPlanView");
+  }
 
   const handleMealPlanGenerated = async (formData) => {
     try {
@@ -22,9 +26,7 @@ function MealPlanView({ appUserId, user }) {
 
     } catch (err) {
       console.error("Meal plan error:", err);
-      setMealPlan({
-        message: "Error generating meal plan: " + err.message
-      });
+      setMealPlan({ message: "Error generating meal plan: " + err.message });
     }
   };
 
@@ -112,14 +114,13 @@ function MealPlanView({ appUserId, user }) {
                 </button>
               </div>
 
-              {/* ERROR MESSAGE FROM BACKEND */}
+              {/* ERROR MESSAGE */}
               {mealPlan.message ? (
                 <div className="info-message">
                   <p>{mealPlan.message}</p>
                 </div>
               ) : (
                 <>
-                  {/* REAL WEEKLY MEAL PLAN */}
                   {mealPlan.days?.length > 0 ? (
                     <div className="weekly-meal-plan">
                       {mealPlan.days.map((day, index) => (
@@ -143,7 +144,7 @@ function MealPlanView({ appUserId, user }) {
                     </div>
                   ) : (
                     <div className="no-meals">
-                      <p>No meals found in this meal plan.</p>
+                      <p>No meals found in this plan.</p>
                     </div>
                   )}
                 </>

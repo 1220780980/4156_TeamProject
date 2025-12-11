@@ -32,7 +32,7 @@ public class AIRecipeController {
      * @param ingredient ingredient that the user wants to use
      * @return ResponseEntity containing the appropriate recipe
      */
-    @GetMapping("ingredient/{ingredient}")
+    @GetMapping("/ingredient/{ingredient}")
     public ResponseEntity<?> getAIRecipe(
         final @PathVariable String ingredient) {
         try {
@@ -70,7 +70,7 @@ public class AIRecipeController {
      * @param userId user identifier
      * @return ResponseEntity containing the appropriate recipe
      */
-    @GetMapping("user/{userId}")
+    @GetMapping("/user/{userId}")
     public ResponseEntity<?> getUserRecipe(
         final @PathVariable Integer userId) {
         try {

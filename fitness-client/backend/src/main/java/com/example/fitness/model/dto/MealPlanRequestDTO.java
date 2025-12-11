@@ -1,6 +1,9 @@
 package com.example.fitness.model.dto;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import lombok.Data;
 
 /**
@@ -26,4 +29,22 @@ public class MealPlanRequestDTO {
 
     /** NutriFlow user ID (set automatically on backend). */
     private Long nutriflowUserId;
+
+    /**
+     * Convert this DTO to a map for NutriFlow API.
+     *
+     * @return map representing this DTO
+     */
+    public Map<String, Object> toMap() {
+        Map<String, Object> map = new HashMap<>();
+
+        map.put("mealsPerDay", mealsPerDay);
+        map.put("maxPrepTime", maxPrepTime);
+        map.put("allergies", allergies);
+        map.put("dislikedMeals", dislikedMeals);
+        map.put("preferredIngredients", preferredIngredients);
+        map.put("nutriflowUserId", nutriflowUserId);
+
+        return map;
+    }
 }
