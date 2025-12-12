@@ -204,3 +204,27 @@ mvn checkstyle:check
 ```
 mvn compile pmd:pmd
 ```
+
+## Multiple Clients
+The NutriFlow service is designed as a stateless RESTful API, which naturally supports multiple simultaneous client connections. Here's how client identification works:
+
+- X-Client-Id: Identifies the client application (e.g., "fitness-app")
+- X-End-User-Id: Identifies the end user within that client
+
+The service uses a ClientTrackingInterceptor that extracts these headers from all incoming requests to /api/** endpoints and logs them for tracking purposes. This allows:
+- Multiple client applications to connect simultaneously
+- Multiple users per client to be distinguished via X-End-User-Id
+
+## Developing a Third-Party Client for Nutriflow
+To build your own client for the NutriFlow service:
+
+1. Base configuration
+```
+Base URL: https://nutriflow-service-55fzkdrnia-uc.a.run.app/api
+```
+
+2. Recommended headers
+```
+X-Client-Id: your-app-name
+X-End-User-Id: <user identifier>
+```
