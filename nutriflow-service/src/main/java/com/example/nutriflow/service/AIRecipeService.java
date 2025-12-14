@@ -307,8 +307,17 @@ public class AIRecipeService {
                 : null;
     }
 
-    public Map<String, Object> generateRecipeForUser(Long userId) {
+    /**
+     * Generates a recipe for a user and returns it as a Map.
+     *
+     * @param userId the user identifier
+     * @return a map containing recipe details
+     */
+    public Map<String, Object> generateRecipeForUser(final Long userId) {
         Recipe recipe = getUserRecipe(userId.intValue());
+
+        String instructions = recipe.getInstructions() != null
+            ? recipe.getInstructions() : "No instructions available";
 
         return Map.of(
                 "title", recipe.getTitle(),
@@ -317,11 +326,10 @@ public class AIRecipeService {
                 "protein", safeNum(recipe.getProtein()),
                 "carbohydrates", safeNum(recipe.getCarbohydrates()),
                 "fat", safeNum(recipe.getFat()),
-                "instructions",
-                recipe.getInstructions() != null ? recipe.getInstructions() : "No instructions available");
+                "instructions", instructions);
     }
 
-    private int safeNum(BigDecimal val) {
+    private int safeNum(final BigDecimal val) {
         return val != null ? val.intValue() : 0;
     }
 }
