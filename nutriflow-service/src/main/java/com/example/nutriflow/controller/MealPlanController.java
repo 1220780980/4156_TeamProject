@@ -3,9 +3,17 @@ package com.example.nutriflow.controller;
 import com.example.nutriflow.service.AIRecipeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Generates weekly meal plans by repeatedly calling the AI recipe generator.
@@ -15,11 +23,17 @@ import java.util.*;
 @CrossOrigin
 public class MealPlanController {
 
+    /** Service for AI-based recipe generation. */
     @Autowired
     private AIRecipeService aiRecipeService;
 
+    /** Number of days in a week. */
     private static final int DAYS_IN_WEEK = 7;
 
+    /** Default number of meals per day. */
+    private static final int DEFAULT_MEALS_PER_DAY = 3;
+
+    /** Names of days in a week. */
     private static final String[] DAY_NAMES = {
             "Monday", "Tuesday", "Wednesday", "Thursday",
             "Friday", "Saturday", "Sunday"
@@ -27,19 +41,19 @@ public class MealPlanController {
 
     /**
      * Generate a weekly meal plan for a user.
-     * 
+     *
      * @param nutriflowUserId the user ID in NutriFlow
      * @param request         preferences map from fitness-client
      * @return weekly meal plan JSON
      */
     @PostMapping("/generate/{nutriflowUserId}")
     public ResponseEntity<?> generateWeeklyPlan(
-            @PathVariable Long nutriflowUserId,
-            @RequestBody Map<String, Object> request) {
+            @PathVariable final Long nutriflowUserId,
+            @RequestBody final Map<String, Object> request) {
 
         int mealsPerDay = request.get("mealsPerDay") != null
                 ? ((Number) request.get("mealsPerDay")).intValue()
-                : 3;
+                : DEFAULT_MEALS_PER_DAY;
 
         List<Map<String, Object>> week = new ArrayList<>();
 
@@ -53,7 +67,8 @@ public class MealPlanController {
             for (int m = 0; m < mealsPerDay; m++) {
 
                 // call EXISTING AI recipe generator
-                Map<String, Object> recipe = aiRecipeService.generateRecipeForUser(nutriflowUserId);
+                Map<String, Object> recipe =
+                    aiRecipeService.generateRecipeForUser(nutriflowUserId);
 
                 if (recipe == null) {
                     recipe = new HashMap<>();
